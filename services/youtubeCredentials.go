@@ -1,3 +1,25 @@
+func GetYouTubeCredentials(username string) (*oauth2.Token, error) {
+	credentials, err := repositoriesAcc.GetYouTubeCredentials(username)
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving YouTube credentials: %v", err)
+	}
+	var expiryTime time.Time
+	if credentials.Expiry.Valid {
+		expiryTime, err = time.Parse(time.RFC3339, credentials.Expiry.String)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing expiry time: %v", err)
+		}
+	}
+	token := &oauth2.Token{
+		AccessToken:  credentials.AccessToken,
+		TokenType:    credentials.TokenType,
+		RefreshToken: credentials.RefreshToken.String,
+		Expiry:       expiryTime,
+		ExpiresIn:    credentials.ExpiresIn.Int64,
+	}
+	return token, nil
+}
+
 func SaveToken(username string, token *oauth2.Token) error {
 	err := repositoriesAcc.InsertYouTubeCredentials(
 		username,
