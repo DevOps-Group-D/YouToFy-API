@@ -1,3 +1,53 @@
+package servicesAcc
+
+import (
+	// "context"
+	"fmt"
+	"log"
+	"os"
+	"time"
+
+	repositoriesAcc "github.com/DevOps-Group-D/YouToFy-API/repositories"
+
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
+	"google.golang.org/api/youtube/v3"
+)
+
+func GetPlaylist(username string, id string) ([]string, error) {
+	token, err := GetYouTubeCredentials(username)
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving YouTube credentials: %v", err)
+	}
+	config, err := loadConfig()
+	if err != nil {
+		return nil, fmt.Errorf("Error loading config: %v", err)
+	}
+	ctx := context.Background()
+	client := config.Client(ctx, token)
+	opts := option.WithHTTPClient(client)
+	service, err := youtube.NewService(ctx, opts)
+	if err != nil {
+		return nil, fmt.Errorf("Error creating YouTube service: %v", err)
+	}
+	part := []string{"snippet,contentDetails"}
+	call := service.PlaylistItems.List(part).PlaylistId(id)
+	var videoTitles []string
+	err = call.Pages(ctx, func(response *youtube.PlaylistItemListResponse) error {
+		for _, item := range response.Items {
+			videoTitles = append(videoTitles, item.Snippet.Title)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving playlist items: %v", err)
+	}
+	return videoTitles, nil
+
+}
+
 func GetYouTubeCredentials(username string) (*oauth2.Token, error) {
 	credentials, err := repositoriesAcc.GetYouTubeCredentials(username)
 	if err != nil {
