@@ -1,3 +1,16 @@
+func GetWebTokenFromCode(code string) (*oauth2.Token, error) {
+	config, err := loadConfig()
+	if err != nil {
+		return nil, fmt.Errorf("Error loading config: %v", err)
+	}
+	ctx := context.Background()
+	token, err := config.Exchange(ctx, code)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to exchange code for token: %v", err)
+	}
+	return token, nil
+}
+
 func GetWebTokenLink() string {
 	config, err := loadConfig()
 	if err != nil {
