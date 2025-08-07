@@ -1,3 +1,18 @@
+func SaveToken(username string, token *oauth2.Token) error {
+	err := repositoriesAcc.InsertYouTubeCredentials(
+		username,
+		token.AccessToken,
+		token.TokenType,
+		token.RefreshToken,
+		token.Expiry.String(),
+		token.ExpiresIn,
+	)
+	if err != nil {
+		return fmt.Errorf("Error saving YouTube credentials: %v", err)
+	}
+	return nil
+}
+
 func GetWebTokenFromCode(code string) (*oauth2.Token, error) {
 	config, err := loadConfig()
 	if err != nil {
