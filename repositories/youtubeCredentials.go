@@ -17,7 +17,7 @@ func InsertYouTubeCredentials(
 	TokenType string,
 	RefreshToken string,
 	Expiry string,
-	ExpiresIn string) error {
+	ExpiresIn int64) error {
 
 	conn, err := database.Connect()
 	if err != nil {
