@@ -2,16 +2,27 @@ package configs
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/viper"
 )
 
 type config struct {
 	ApiConfig *ApiConfig
+	DBConfig  *DBConfig
 }
 
 type ApiConfig struct {
 	Port string
+}
+
+type DBConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
+	SslMode  string
 }
 
 var Cfg *config
@@ -39,6 +50,14 @@ func LoadConfig() *config {
 		ApiConfig: &ApiConfig{
 			Port: viper.GetString("api.port"),
 		},
+		DBConfig: &DBConfig{
+			Host:     viper.GetString("database.host"),
+			Port:     viper.GetString("database.port"),
+			User:     os.Getenv("POSTGRES_USER"),
+			Password: os.Getenv("POSTGRES_PASSWORD"),
+			Name:     viper.GetString("database.name"),
+			SslMode:  viper.GetString("database.sslmode"),
+		},
 	}
 
 	return Cfg
@@ -47,4 +66,10 @@ func LoadConfig() *config {
 func setDefaultValues() {
 	// API Config
 	viper.SetDefault("api.port", 3333)
+
+	// DB Config
+	viper.SetDefault("database.host", "postgres")
+	viper.SetDefault("database.port", "5432")
+	viper.SetDefault("database.name", "youtofy")
+	viper.SetDefault("database.sslmode", "disable")
 }
