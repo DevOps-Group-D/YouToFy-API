@@ -1,9 +1,5 @@
 package spotify
 
-type AuthenticationResponse struct {
-	Code string `json:"code"`
-}
-
 type AccessTokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	TokenType    string `json:"token_type"`
