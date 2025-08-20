@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/DevOps-Group-D/YouToFy-API/configs"
-	"github.com/DevOps-Group-D/YouToFy-API/controllers/spotify"
+	spotiftController "github.com/DevOps-Group-D/YouToFy-API/controllers/spotify"
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
 )
@@ -24,8 +24,12 @@ func main() {
 	// Listening and serving service
 	router := chi.NewRouter()
 
-	// Registering controllers
-	router.Get("/spotify/login", spotify.Login)
+	// Registering get routes
+	router.Get("/spotify/login", spotiftController.Login)
+	router.Get("/spotify/playlist", spotiftController.GetPlaylist)
+
+	// Registering post routes
+	router.Post("/spotify/save", spotiftController.Save)
 
 	fmt.Println("Listening and serving on port", cfg.ApiConfig.Port)
 	http.ListenAndServe(fmt.Sprintf(":%s", cfg.ApiConfig.Port), router)
