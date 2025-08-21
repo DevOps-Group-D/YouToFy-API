@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	spotifyModels "github.com/DevOps-Group-D/YouToFy-API/models/spotify"
 	"github.com/DevOps-Group-D/YouToFy-API/services/authentication"
@@ -14,17 +15,9 @@ import (
 const GET_PLAYLISTS_URL = "https://api.spotify.com/v1/playlists/%s/tracks"
 
 func GetPlaylist(w http.ResponseWriter, r *http.Request) {
-	var playlist spotifyModels.Playlist
+	playlistId := strings.Split(r.URL.String(), "/")[3]
 
-	err := json.NewDecoder(r.Body).Decode(&playlist)
-	if err != nil {
-		errMsg := fmt.Sprintf("Error decoding request playlist body: %s", err.Error())
-		http.Error(w, errMsg, http.StatusBadRequest)
-		fmt.Println(errMsg)
-		return
-	}
-
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(GET_PLAYLISTS_URL, playlist.PlaylistID), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(GET_PLAYLISTS_URL, playlistId), nil)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error creating get spotify playlist request: %s", err.Error())
 		http.Error(w, errMsg, http.StatusBadRequest)
@@ -32,12 +25,17 @@ func GetPlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(fmt.Sprintf(GET_PLAYLISTS_URL, playlist.PlaylistID))
-
-	username := r.Header.Get("Username")
+	c, err := r.Cookie("username")
+	if err != nil {
+		errMsg := fmt.Sprintf("Missing username cookie: %s", err.Error())
+		http.Error(w, errMsg, http.StatusUnauthorized)
+		fmt.Println(errMsg)
+		return
+	}
+	username := c.Value
 
 	authorized := authentication.Authorize(username, r.Cookies())
-	if authorized {
+	if !authorized {
 		errMsg := "Error: unauthorized"
 		http.Error(w, errMsg, http.StatusBadRequest)
 		fmt.Println(errMsg)
@@ -52,7 +50,7 @@ func GetPlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken.Value))
 
 	res, err := utils.Client.Do(req)
 	if err != nil {

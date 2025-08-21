@@ -36,7 +36,7 @@ func main() {
 
 	// Registering get routes
 	router.Get("/spotify/login", spotiftController.Login)
-	router.Get("/spotify/playlist", spotiftController.GetPlaylist)
+	router.Get("/spotify/playlist/{playlistId}", spotiftController.GetPlaylist)
 
 	// Registering post routes
 	router.Post("/spotify/save", spotiftController.Save)
