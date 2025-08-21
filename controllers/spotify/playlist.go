@@ -36,7 +36,7 @@ func GetPlaylist(w http.ResponseWriter, r *http.Request) {
 
 	username := r.Header.Get("Username")
 
-	authorized := authentication.Authorize(username)
+	authorized := authentication.Authorize(username, r.Cookies())
 	if authorized {
 		errMsg := "Error: unauthorized"
 		http.Error(w, errMsg, http.StatusBadRequest)

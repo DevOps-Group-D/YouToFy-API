@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -28,7 +29,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorized := authenticationService.Authorize(username.Value)
+	authorized := authenticationService.Authorize(username.Value, r.Cookies())
 	if !authorized {
 		errMsg := "Error: Unauthorized"
 		http.Error(w, errMsg, http.StatusUnauthorized)
@@ -67,7 +68,7 @@ func Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authorized := authenticationService.Authorize(username.Value)
+	authorized := authenticationService.Authorize(username.Value, r.Cookies())
 	if !authorized {
 		errMsg := "Error: Unauthorized"
 		http.Error(w, errMsg, http.StatusUnauthorized)
@@ -78,7 +79,7 @@ func Save(w http.ResponseWriter, r *http.Request) {
 	body := url.Values{}
 	body.Set("grant_type", "authorization_code")
 	body.Set("code", authReq.Code)
-	body.Set("redirect_uri", fmt.Sprintf("%s://%s:%s/%s", configs.Cfg.FrontConfig.Protocol, configs.Cfg.FrontConfig.Host, configs.Cfg.FrontConfig.Port, "callback"))
+	body.Set("redirect_uri", fmt.Sprintf("%s://%s", configs.Cfg.FrontConfig.Protocol, configs.Cfg.FrontConfig.Host))
 
 	req, err := http.NewRequest(http.MethodPost, ACCESS_TOKEN_URL, strings.NewReader(body.Encode()))
 	if err != nil {
@@ -103,7 +104,15 @@ func Save(w http.ResponseWriter, r *http.Request) {
 
 	var accessTokenRes spotifyModels.AccessTokenResponse
 
-	err = json.NewDecoder(res.Body).Decode(&accessTokenRes)
+	raw, err := io.ReadAll(res.Body)
+	if err != nil {
+		errMsg := fmt.Sprintf("Error reading response body: %s", err.Error())
+		http.Error(w, errMsg, http.StatusInternalServerError)
+		fmt.Println(errMsg)
+		return
+	}
+
+	err = json.Unmarshal(raw, &accessTokenRes)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error decoding access token response body: %s", err.Error())
 		http.Error(w, errMsg, http.StatusBadRequest)
@@ -123,6 +132,7 @@ func Save(w http.ResponseWriter, r *http.Request) {
 		Name:     "spotify_access_token",
 		Value:    accessTokenRes.AccessToken,
 		Expires:  time.Now().Add(time.Hour),
+		Path:     "/",
 		HttpOnly: true,
 	})
 }
