@@ -10,7 +10,7 @@ import (
 
 const (
 	AUTH_URL       = "https://accounts.spotify.com/authorize"
-	REDIRECT_ROUTE = "%s://%s:%s/callback"
+	REDIRECT_ROUTE = "%s://%s"
 )
 
 var scopes = []string{"playlist-read-private", "playlist-modify-private", "playlist-modify-public"}
@@ -18,8 +18,7 @@ var scopes = []string{"playlist-read-private", "playlist-modify-private", "playl
 func GetAuthURL() string {
 	protocol := configs.Cfg.FrontConfig.Protocol
 	host := configs.Cfg.FrontConfig.Host
-	port := configs.Cfg.FrontConfig.Port
-	redirectRoute := fmt.Sprintf(REDIRECT_ROUTE, protocol, host, port)
+	redirectRoute := fmt.Sprintf(REDIRECT_ROUTE, protocol, host)
 
 	state := utils.GenerateRandomString(16)
 	formatedScopes := strings.Join(scopes, "%20")
