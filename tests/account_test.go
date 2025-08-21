@@ -85,3 +85,18 @@ func TestGetUser(t *testing.T) {
 	}
 
 }
+
+func TestUnauthorizedError_Error(t *testing.T) {
+	err := &yterrors.UnauthorizedError{}
+	expected := "UnauthorizedError"
+	if err.Error() != expected {
+		t.Errorf("expected %s, got %s", expected, err.Error())
+	}
+}
+
+func TestUnauthorizedError_IsError(t *testing.T) {
+	var err error = &yterrors.UnauthorizedError{}
+	if !errors.Is(err, &yterrors.UnauthorizedError{}) {
+		t.Error("UnauthorizedError should be recognized as itself using errors.Is")
+	}
+}
