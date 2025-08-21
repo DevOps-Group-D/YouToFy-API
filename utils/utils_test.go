@@ -1,28 +1,26 @@
-package tests
+package utils
 
 import (
 	"testing"
-
-	"github.com/DevOps-Group-D/YouToFy-API/utils"
 )
 
 func TestHash(t *testing.T) {
 	password := "testpassword"
-	hashedPassword, err := utils.HashPassword(password)
+	hashedPassword, err := HashPassword(password)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
 	if hashedPassword == "" {
 		t.Error("expected hashed password to be non-empty")
 	}
-	err = utils.CheckHashedPassword(hashedPassword, password)
+	err = CheckHashedPassword(hashedPassword, password)
 	if err != nil {
 		t.Errorf("expected no error when checking hashed password, got %v", err)
 	}
 }
 
 func TestToken(t *testing.T) {
-	token, err := utils.GenerateToken(32)
+	token, err := GenerateToken(32)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
@@ -32,7 +30,7 @@ func TestToken(t *testing.T) {
 	if token == "" {
 		t.Error("expected token to be non-empty")
 	}
-	otherToken, err := utils.GenerateToken(32)
+	otherToken, err := GenerateToken(32)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}

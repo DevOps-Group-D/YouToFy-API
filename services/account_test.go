@@ -1,4 +1,4 @@
-package tests
+package servicesAcc
 
 import (
 	// error package in erros/account.go
@@ -8,7 +8,6 @@ import (
 	"github.com/DevOps-Group-D/YouToFy-API/database"
 	yterrors "github.com/DevOps-Group-D/YouToFy-API/errors"
 	"github.com/DevOps-Group-D/YouToFy-API/models"
-	ServiceAcc "github.com/DevOps-Group-D/YouToFy-API/services"
 	"github.com/DevOps-Group-D/YouToFy-API/utils"
 )
 
@@ -20,12 +19,12 @@ func TestLogin(t *testing.T) {
 		username: "testuser",
 		Password: "testpassword",
 	}
-	err := ServiceAcc.Register(accountData.username, accountData.Password)
+	err := Register(accountData.username, accountData.Password)
 	if err != nil {
 		t.Fatalf("failed to register user: %v", err)
 	}
 
-	account, err := ServiceAcc.Login(accountData.username, accountData.Password)
+	account, err := Login(accountData.username, accountData.Password)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
@@ -43,7 +42,7 @@ func TestRegister(t *testing.T) {
 		username: "testuser",
 		Password: "testpassword",
 	}
-	err := ServiceAcc.Register(accountData.username, accountData.Password)
+	err := Register(accountData.username, accountData.Password)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
@@ -58,7 +57,7 @@ func TestGetUser(t *testing.T) {
 		username: "testuser",
 		Password: "testpassword",
 	}
-	err := ServiceAcc.Register(accountData.username, accountData.Password)
+	err := Register(accountData.username, accountData.Password)
 	if err != nil {
 		t.Fatalf("failed to register user: %v", err)
 	}
