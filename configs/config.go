@@ -110,13 +110,13 @@ func setDefaultValues() {
 	viper.SetDefault("Authentication.protocol", "http")
 
 	// DB Config
-	viper.SetDefault("database.host", "postgres")
+	viper.SetDefault("database.host", "localhost")
 	viper.SetDefault("database.port", 5432)
 	viper.SetDefault("database.name", "youtofy")
 	viper.SetDefault("database.sslmode", "disable")
 
 	// Front Config
-	viper.SetDefault("front.host", "127.0.0.1")
-	viper.SetDefault("front.port", 8080)
-	viper.SetDefault("front.protocol", "http")
+	viper.SetDefault("front.host", "loving-deep-loon.ngrok-free.app")
+	viper.SetDefault("front.port", 443)
+	viper.SetDefault("front.protocol", "https")
 }
