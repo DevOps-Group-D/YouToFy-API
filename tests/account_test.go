@@ -12,6 +12,29 @@ import (
 	"github.com/DevOps-Group-D/YouToFy-API/utils"
 )
 
+func TestLogin(t *testing.T) {
+	accountData := struct {
+		username string
+		Password string
+	}{
+		username: "testuser",
+		Password: "testpassword",
+	}
+	err := ServiceAcc.Register(accountData.username, accountData.Password)
+	if err != nil {
+		t.Fatalf("failed to register user: %v", err)
+	}
+
+	account, err := ServiceAcc.Login(accountData.username, accountData.Password)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+
+	if account.Username != accountData.username {
+		t.Errorf("expected username %s, got %s", accountData.username, account.Username)
+	}
+}
+
 func TestRegister(t *testing.T) {
 	accountData := struct {
 		username string
