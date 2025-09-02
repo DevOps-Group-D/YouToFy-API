@@ -16,6 +16,15 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
+func GetAuthURL() string {
+	config, err := loadConfig()
+	if err != nil {
+		log.Fatalf("Error loading config: %v", err)
+	}
+	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	return authURL
+}
+
 func GetPlaylist(username string, id string) ([]string, error) {
 	token, err := GetYouTubeCredentials(username)
 	if err != nil {
@@ -96,15 +105,6 @@ func GetWebTokenFromCode(code string) (*oauth2.Token, error) {
 		return nil, fmt.Errorf("Unable to exchange code for token: %v", err)
 	}
 	return token, nil
-}
-
-func GetWebTokenLink() string {
-	config, err := loadConfig()
-	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
-	}
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	return authURL
 }
 
 func loadConfig() (*oauth2.Config, error) {
