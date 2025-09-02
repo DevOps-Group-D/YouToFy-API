@@ -14,7 +14,7 @@ import (
 
 const GET_PLAYLISTS_URL = "https://api.spotify.com/v1/playlists/%s/tracks"
 
-func GetPlaylist(w http.ResponseWriter, r *http.Request) {
+func (p SpotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 	playlistId := strings.Split(r.URL.String(), "/")[3]
 
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(GET_PLAYLISTS_URL, playlistId), nil)

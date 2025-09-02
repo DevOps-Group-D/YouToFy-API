@@ -20,7 +20,7 @@ import (
 
 const ACCESS_TOKEN_URL = "https://accounts.spotify.com/api/token"
 
-func Login(w http.ResponseWriter, r *http.Request) {
+func (p SpotifyProvider) Login(w http.ResponseWriter, r *http.Request) {
 	username, err := r.Cookie("username")
 	if err != nil {
 		errMsg := fmt.Sprintf("Error getting username cookie: %s", err.Error())
@@ -49,7 +49,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(302)
 }
 
-func Save(w http.ResponseWriter, r *http.Request) {
+func (p SpotifyProvider) Save(w http.ResponseWriter, r *http.Request) {
 	var authReq spotifyModels.AuthenticationRequest
 
 	err := json.NewDecoder(r.Body).Decode(&authReq)
