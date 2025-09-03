@@ -8,12 +8,23 @@ import (
 )
 
 type config struct {
-	ApiConfig *ApiConfig
-	DBConfig  *DBConfig
+	ApiConfig     *ApiConfig
+	DBConfig      *DBConfig
+	YoutubeConfig *YoutubeConfig
 }
 
 type ApiConfig struct {
 	Port string
+}
+
+type YoutubeConfig struct {
+	ClientId                string
+	ProjectId               string
+	AuthUri                 string
+	TokenUri                string
+	AuthProviderX509CertUrl string
+	ClientSecret            string
+	RedirectUri             string
 }
 
 type DBConfig struct {
@@ -57,6 +68,15 @@ func LoadConfig() *config {
 			Password: os.Getenv("POSTGRES_PASSWORD"),
 			Name:     viper.GetString("database.name"),
 			SslMode:  viper.GetString("database.sslmode"),
+		},
+		YoutubeConfig: &YoutubeConfig{
+			ClientId:                os.Getenv("YOUTUBE_CLIENT_ID"),
+			ProjectId:               os.Getenv("YOUTUBE_PROJECT_ID"),
+			AuthUri:                 os.Getenv("YOUTUBE_AUTH_URI"),
+			TokenUri:                os.Getenv("YOUTUBE_TOKEN_URI"),
+			AuthProviderX509CertUrl: os.Getenv("YOUTUBE_AUTH_PROVIDER_X509_CERT_URL"),
+			ClientSecret:            os.Getenv("YOUTUBE_CLIENT_SECRET"),
+			RedirectUri:             os.Getenv("YOUTUBE_REDIRECT_URI"),
 		},
 	}
 

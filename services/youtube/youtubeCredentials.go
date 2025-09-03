@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/DevOps-Group-D/YouToFy-API/configs"
 	repositoriesAcc "github.com/DevOps-Group-D/YouToFy-API/repositories"
 
 	"golang.org/x/net/context"
@@ -17,7 +18,7 @@ import (
 )
 
 func GetAuthURL() string {
-	config, err := loadConfig()
+	config, err := loadFromConfig()
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
@@ -26,7 +27,7 @@ func GetAuthURL() string {
 }
 
 func GetPlaylist(paylistId string, token *oauth2.Token) ([]string, error) {
-	config, err := loadConfig()
+	config, err := loadFromConfig()
 	if err != nil {
 		return nil, fmt.Errorf("error loading config: %v", err)
 	}
@@ -85,13 +86,13 @@ func SaveToken(username string, token *oauth2.Token) error {
 		token.ExpiresIn,
 	)
 	if err != nil {
-		return fmt.Errorf("Error saving YouTube credentials: %v", err)
+		return fmt.Errorf("error saving YouTube credentials: %v", err)
 	}
 	return nil
 }
 
 func GetWebTokenFromCode(code string) (*oauth2.Token, error) {
-	config, err := loadConfig()
+	config, err := loadFromConfig()
 	if err != nil {
 		return nil, fmt.Errorf("error loading config: %v", err)
 	}
@@ -111,6 +112,20 @@ func loadConfig() (*oauth2.Config, error) {
 	config, err := google.ConfigFromJSON(b, youtube.YoutubeReadonlyScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+	return config, nil
+}
+
+func loadFromConfig() (*oauth2.Config, error) {
+	config := &oauth2.Config{
+		ClientID:     configs.Cfg.YoutubeConfig.ClientId,
+		ClientSecret: configs.Cfg.YoutubeConfig.ClientSecret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  configs.Cfg.YoutubeConfig.AuthUri,
+			TokenURL: configs.Cfg.YoutubeConfig.TokenUri,
+		},
+		RedirectURL: configs.Cfg.YoutubeConfig.RedirectUri,
+		Scopes:      []string{youtube.YoutubeReadonlyScope},
 	}
 	return config, nil
 }
