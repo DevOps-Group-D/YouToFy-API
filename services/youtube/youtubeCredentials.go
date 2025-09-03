@@ -25,24 +25,20 @@ func GetAuthURL() string {
 	return authURL
 }
 
-func GetPlaylist(username string, id string) ([]string, error) {
-	token, err := GetYouTubeCredentials(username)
-	if err != nil {
-		return nil, fmt.Errorf("Error retrieving YouTube credentials: %v", err)
-	}
+func GetPlaylist(paylistId string, token *oauth2.Token) ([]string, error) {
 	config, err := loadConfig()
 	if err != nil {
-		return nil, fmt.Errorf("Error loading config: %v", err)
+		return nil, fmt.Errorf("error loading config: %v", err)
 	}
 	ctx := context.Background()
 	client := config.Client(ctx, token)
 	opts := option.WithHTTPClient(client)
 	service, err := youtube.NewService(ctx, opts)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating YouTube service: %v", err)
+		return nil, fmt.Errorf("error creating YouTube service: %v", err)
 	}
 	part := []string{"snippet,contentDetails"}
-	call := service.PlaylistItems.List(part).PlaylistId(id)
+	call := service.PlaylistItems.List(part).PlaylistId(paylistId)
 	var videoTitles []string
 	err = call.Pages(ctx, func(response *youtube.PlaylistItemListResponse) error {
 		for _, item := range response.Items {
@@ -51,7 +47,7 @@ func GetPlaylist(username string, id string) ([]string, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error retrieving playlist items: %v", err)
+		return nil, fmt.Errorf("error retrieving playlist items: %v", err)
 	}
 	return videoTitles, nil
 
@@ -60,13 +56,13 @@ func GetPlaylist(username string, id string) ([]string, error) {
 func GetYouTubeCredentials(username string) (*oauth2.Token, error) {
 	credentials, err := repositoriesAcc.GetYouTubeCredentials(username)
 	if err != nil {
-		return nil, fmt.Errorf("Error retrieving YouTube credentials: %v", err)
+		return nil, fmt.Errorf("error retrieving YouTube credentials: %v", err)
 	}
 	var expiryTime time.Time
 	if credentials.Expiry.Valid {
 		expiryTime, err = time.Parse(time.RFC3339, credentials.Expiry.String)
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing expiry time: %v", err)
+			return nil, fmt.Errorf("error parsing expiry time: %v", err)
 		}
 	}
 	token := &oauth2.Token{
@@ -97,12 +93,12 @@ func SaveToken(username string, token *oauth2.Token) error {
 func GetWebTokenFromCode(code string) (*oauth2.Token, error) {
 	config, err := loadConfig()
 	if err != nil {
-		return nil, fmt.Errorf("Error loading config: %v", err)
+		return nil, fmt.Errorf("error loading config: %v", err)
 	}
 	ctx := context.Background()
 	token, err := config.Exchange(ctx, code)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to exchange code for token: %v", err)
+		return nil, fmt.Errorf("unable to exchange code for token: %v", err)
 	}
 	return token, nil
 }
