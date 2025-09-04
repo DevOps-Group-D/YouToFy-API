@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
+	youtubeModels "github.com/DevOps-Group-D/YouToFy-API/models/youtube"
 	authenticationService "github.com/DevOps-Group-D/YouToFy-API/services/authentication"
 	youtubeService "github.com/DevOps-Group-D/YouToFy-API/services/youtube"
 )
@@ -21,7 +21,16 @@ func (p YoutubeProvider) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p YoutubeProvider) Save(w http.ResponseWriter, r *http.Request) {
-	// code := r.Header.Get("code")
+	var authReq youtubeModels.AuthenticationRequest
+
+	err := json.NewDecoder(r.Body).Decode(&authReq)
+	if err != nil {
+		errMsg := fmt.Sprintf("Error decoding auth request body: %s", err.Error())
+		http.Error(w, errMsg, http.StatusBadRequest)
+		fmt.Println(errMsg)
+		return
+	}
+
 	username, err := r.Cookie("username")
 	if err != nil {
 		errMsg := fmt.Sprintf("Error getting username cookie: %s", err.Error())
@@ -37,8 +46,7 @@ func (p YoutubeProvider) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	code := r.URL.Query().Get("code")
-	authToken, error := youtubeService.GetWebTokenFromCode(code)
+	authToken, error := youtubeService.GetWebTokenFromCode(authReq.Code)
 	if error != nil {
 		http.Error(w, "error retrieving token from code: "+error.Error(), http.StatusInternalServerError)
 		return
@@ -48,15 +56,15 @@ func (p YoutubeProvider) Save(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error marshalling token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	http.SetCookie(w, &http.Cookie{
-		Name:  "youtube_access_token",
-		Value: authToken.AccessToken})
-	http.SetCookie(w, &http.Cookie{
-		Name:  "youtube_token_type",
-		Value: authToken.TokenType})
-	http.SetCookie(w, &http.Cookie{
-		Name:  "youtube_expiry",
-		Value: authToken.Expiry.Format(time.RFC3339)})
+		Name:     "youtube_access_token",
+		Value:    authToken.AccessToken,
+		Expires:  authToken.Expiry,
+		Path:     "/",
+		HttpOnly: true,
+	})
+
 	w.Header().Add("Content-Type", "application/json")
 	w.Write(jsonResponse)
 	w.WriteHeader(http.StatusOK)

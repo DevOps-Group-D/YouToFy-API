@@ -12,7 +12,6 @@ import (
 )
 
 func (p YoutubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
-
 	username, err := r.Cookie("username")
 	if err != nil {
 		errMsg := fmt.Sprintf("Error getting username cookie: %s", err.Error())
@@ -37,28 +36,7 @@ func (p YoutubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(errMsg)
 		return
 	}
-	tokenType, err := r.Cookie("youtube_token_type")
-	if err != nil {
-		errMsg := fmt.Sprintf("Error getting youtube_token_type cookie: %s", err.Error())
-		http.Error(w, errMsg, http.StatusUnauthorized)
-		fmt.Println(errMsg)
-		return
-	}
-	expiry, err := r.Cookie("youtube_expiry")
-	if err != nil {
-		errMsg := fmt.Sprintf("Error getting youtube_expiry cookie: %s", err.Error())
-		http.Error(w, errMsg, http.StatusUnauthorized)
-		fmt.Println(errMsg)
-		return
-	}
-	expiryTime, err := time.Parse(time.RFC3339, expiry.Value)
-	if err != nil {
-		errMsg := fmt.Sprintf("Error parsing youtube_expiry cookie: %s", err.Error())
-		http.Error(w, errMsg, http.StatusUnauthorized)
-		fmt.Println(errMsg)
-		return
-	}
-	authCode = tokenFromHeader(accessToken.Value, tokenType.Value, expiryTime)
+	authCode = tokenFromHeader(accessToken.Value, "Bearer", accessToken.Expires)
 	if authCode == nil {
 		errMsg := "Error: Unauthorized"
 		http.Error(w, errMsg, http.StatusUnauthorized)
@@ -66,11 +44,6 @@ func (p YoutubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err != nil {
-		http.Error(w, "error Unmarshalling playlist: "+err.Error(), http.StatusInternalServerError)
-		fmt.Println("Error unmarshaling JSON:", err)
-		return
-	}
 	videos, err := youtubeService.GetPlaylist(playlistId, authCode)
 	if err != nil {
 		http.Error(w, "error retrieving playlist: "+err.Error(), http.StatusInternalServerError)

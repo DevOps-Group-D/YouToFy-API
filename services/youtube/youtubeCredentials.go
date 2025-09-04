@@ -29,7 +29,7 @@ func GetAuthURL() string {
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	authURL := config.AuthCodeURL("youtube", oauth2.AccessTypeOffline)
 	return authURL
 }
 
