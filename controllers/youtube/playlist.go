@@ -11,7 +11,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func (p YoutubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
+func (p youtubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 	username, err := r.Cookie("username")
 	if err != nil {
 		errMsg := fmt.Sprintf("Error getting username cookie: %s", err.Error())
@@ -56,7 +56,7 @@ func (p YoutubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO
-func (p YoutubeProvider) InsertPlaylist(w http.ResponseWriter, r *http.Request) {
+func (p youtubeProvider) InsertPlaylist(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("[Youtube] InsertPlaylist not implemented")
 }
 

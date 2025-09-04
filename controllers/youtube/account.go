@@ -10,7 +10,7 @@ import (
 	youtubeService "github.com/DevOps-Group-D/YouToFy-API/services/youtube"
 )
 
-func (p YoutubeProvider) Login(w http.ResponseWriter, r *http.Request) {
+func (p youtubeProvider) Login(w http.ResponseWriter, r *http.Request) {
 	authUrl := youtubeService.GetAuthURL()
 	http.Redirect(w, r, authUrl, http.StatusTemporaryRedirect)
 	response := `{"authUrl": "` + authUrl + `"}`
@@ -20,7 +20,7 @@ func (p YoutubeProvider) Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(302)
 }
 
-func (p YoutubeProvider) Save(w http.ResponseWriter, r *http.Request) {
+func (p youtubeProvider) Save(w http.ResponseWriter, r *http.Request) {
 	var authReq youtubeModels.AuthenticationRequest
 
 	err := json.NewDecoder(r.Body).Decode(&authReq)

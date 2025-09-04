@@ -1,3 +1,7 @@
 package youtube
 
-type YoutubeProvider struct{}
+type youtubeProvider struct{}
+
+func NewYoutubeProvider() *youtubeProvider {
+	return &youtubeProvider{}
+}
