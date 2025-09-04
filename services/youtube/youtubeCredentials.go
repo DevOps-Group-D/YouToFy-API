@@ -95,6 +95,7 @@ func GetWebTokenFromCode(code string) (*oauth2.Token, error) {
 	return token, nil
 }
 
+// TODO: Remove it
 func loadConfig() (*oauth2.Config, error) {
 	b, err := os.ReadFile("client_secret.json")
 	if err != nil {
