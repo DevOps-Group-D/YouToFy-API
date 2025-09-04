@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -20,10 +21,12 @@ type SpotifyService struct {
 }
 
 const (
-	ACCESS_TOKEN_URL  = "https://accounts.spotify.com/api/token"
-	AUTH_URL          = "https://accounts.spotify.com/authorize"
-	GET_PLAYLISTS_URL = "https://api.spotify.com/v1/playlists/%s/tracks"
-	REDIRECT_ROUTE    = "%s://%s"
+	ACCESS_TOKEN_URL     = "https://accounts.spotify.com/api/token"
+	AUTH_URL             = "https://accounts.spotify.com/authorize"
+	GET_PLAYLISTS_URL    = "https://api.spotify.com/v1/playlists/%s/tracks"
+	INSERT_PLAYLISTS_URL = "https://api.spotify.com/v1/playlists/%s/tracks"
+	SEARCH_MUSIC_URL     = "https://api.spotify.com/v1/search"
+	REDIRECT_ROUTE       = "%s://%s"
 )
 
 var scopes = []string{"playlist-read-private", "playlist-modify-private", "playlist-modify-public"}
@@ -90,7 +93,7 @@ func (s *SpotifyService) GetAccessToken(username string, code string) (*spotifyM
 	return &accessTokenRes, nil
 }
 
-func (s *SpotifyService) GetPlaylist(username string, playlistId string, accessToken string) (*spotifyModels.Playlist, error) {
+func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*spotifyModels.Playlist, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(GET_PLAYLISTS_URL, playlistId), nil)
 	if err != nil {
 		return nil, err
@@ -120,4 +123,62 @@ func (s *SpotifyService) GetPlaylist(username string, playlistId string, accessT
 	}
 
 	return &playlist, nil
+}
+
+func (s *SpotifyService) InsertPlaylist(playlistId string, username string, accessToken string, playlist *spotifyModels.Playlist) error {
+	insertPlaylistRequest := spotifyModels.InsertPlaylistRequest{Position: 0}
+
+	for _, item := range playlist.Items {
+		music := item.Track
+		musicName := music.Name
+		artistName := music.Artists[0].Name
+
+		musicFound, err := findMusic(musicName, artistName)
+		if err != nil {
+			fmt.Printf("Could not found %s from %s\n", musicName, artistName)
+			continue
+		}
+		musicFoundUri := musicFound.URI
+		insertPlaylistRequest.Uris = append(insertPlaylistRequest.Uris, musicFoundUri)
+	}
+
+	body, err := json.Marshal(insertPlaylistRequest)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf(INSERT_PLAYLISTS_URL, playlistId), bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	req.Header.Set("Content-Type", "application/json")
+
+	return nil
+}
+
+func findMusic(name string, artist string) (*spotifyModels.Track, error) {
+	queryParams := url.Values{}
+	queryParams.Set("q", fmt.Sprintf("%s %s", name, artist))
+	queryParams.Set("type", "track")
+
+	req, err := http.NewRequest(http.MethodGet, SEARCH_MUSIC_URL+"?"+queryParams.Encode(), nil)
+	if err != nil {
+		return nil, nil
+	}
+
+	res, err := utils.Client.Do(req)
+	if err != nil {
+		return nil, nil
+	}
+
+	var tracks *spotifyModels.Tracks
+
+	err = json.NewDecoder(res.Body).Decode(&tracks)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tracks.Items[0], nil
 }

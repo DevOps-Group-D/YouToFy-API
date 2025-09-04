@@ -13,4 +13,7 @@ type Provider interface {
 
 	// Get musics from a specific playlist
 	GetPlaylist(w http.ResponseWriter, r *http.Request)
+
+	// Insert musics into a specific playlist
+	InsertPlaylist(w http.ResponseWriter, r *http.Request)
 }
