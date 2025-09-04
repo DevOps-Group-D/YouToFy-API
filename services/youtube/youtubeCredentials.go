@@ -1,14 +1,12 @@
 package servicesAcc
 
 import (
-	// "context"
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/DevOps-Group-D/YouToFy-API/configs"
-	repositoriesAcc "github.com/DevOps-Group-D/YouToFy-API/repositories"
+	youtubeRepository "github.com/DevOps-Group-D/YouToFy-API/repositories/youtube"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -62,35 +60,20 @@ func GetPlaylist(paylistId string, token *oauth2.Token) ([]string, error) {
 }
 
 func GetYouTubeCredentials(username string) (*oauth2.Token, error) {
-	credentials, err := repositoriesAcc.GetYouTubeCredentials(username)
+	credentials, err := youtubeRepository.GetYouTubeCredentials(username)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving YouTube credentials: %v", err)
 	}
-	var expiryTime time.Time
-	if credentials.Expiry.Valid {
-		expiryTime, err = time.Parse(time.RFC3339, credentials.Expiry.String)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing expiry time: %v", err)
-		}
-	}
 	token := &oauth2.Token{
-		AccessToken:  credentials.AccessToken,
-		TokenType:    credentials.TokenType,
-		RefreshToken: credentials.RefreshToken.String,
-		Expiry:       expiryTime,
-		ExpiresIn:    credentials.ExpiresIn.Int64,
+		AccessToken: credentials.AccessToken,
 	}
 	return token, nil
 }
 
 func SaveToken(username string, token *oauth2.Token) error {
-	err := repositoriesAcc.InsertYouTubeCredentials(
+	err := youtubeRepository.InsertYouTubeCredentials(
 		username,
 		token.AccessToken,
-		token.TokenType,
-		token.RefreshToken,
-		token.Expiry.String(),
-		token.ExpiresIn,
 	)
 	if err != nil {
 		return fmt.Errorf("error saving YouTube credentials: %v", err)

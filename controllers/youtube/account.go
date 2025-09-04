@@ -57,6 +57,11 @@ func (p YoutubeProvider) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := youtubeService.SaveToken(username.Value, authToken); err != nil {
+		http.Error(w, "error saving youtube token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "youtube_access_token",
 		Value:    authToken.AccessToken,
