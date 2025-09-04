@@ -55,6 +55,11 @@ func (p YoutubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// TODO
+func (p YoutubeProvider) InsertPlaylist(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("[Youtube] InsertPlaylist not implemented")
+}
+
 func tokenFromHeader(accessToken string, tokenType string, expiry time.Time) *oauth2.Token {
 	return &oauth2.Token{
 		AccessToken: accessToken,
