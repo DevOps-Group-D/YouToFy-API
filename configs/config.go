@@ -8,14 +8,23 @@ import (
 )
 
 type config struct {
-	ApiConfig     *ApiConfig
-	DBConfig      *DBConfig
-	FrontConfig   *FrontConfig
-	YoutubeConfig *YoutubeConfig
+	ApiConfig            *ApiConfig
+	DBConfig             *DBConfig
+	FrontConfig          *FrontConfig
+	SpotifyConfig        *SpotifyConfig
+	AuthenticationConfig *AuthenticationConfig
+	YoutubeConfig        *YoutubeConfig
 }
 
 type ApiConfig struct {
-	Port string
+	Port     string
+	Protocol string
+}
+
+type AuthenticationConfig struct {
+	Host     string
+	Port     string
+	Protocol string
 }
 
 type YoutubeConfig struct {
@@ -43,6 +52,11 @@ type FrontConfig struct {
 	Protocol string
 }
 
+type SpotifyConfig struct {
+	ClientId     string
+	ClientSecret string
+}
+
 var Cfg *config
 
 func init() {
@@ -66,7 +80,13 @@ func LoadConfig() *config {
 
 	Cfg = &config{
 		ApiConfig: &ApiConfig{
-			Port: viper.GetString("api.port"),
+			Port:     viper.GetString("api.port"),
+			Protocol: viper.GetString("api.protocol"),
+		},
+		AuthenticationConfig: &AuthenticationConfig{
+			Host:     viper.GetString("authentication.host"),
+			Port:     viper.GetString("authentication.port"),
+			Protocol: viper.GetString("authentication.protocol"),
 		},
 		DBConfig: &DBConfig{
 			Host:     viper.GetString("database.host"),
@@ -90,6 +110,10 @@ func LoadConfig() *config {
 			ClientSecret:            os.Getenv("YOUTUBE_CLIENT_SECRET"),
 			RedirectUri:             os.Getenv("YOUTUBE_REDIRECT_URI"),
 		},
+		SpotifyConfig: &SpotifyConfig{
+			ClientId:     os.Getenv("SPOTIFY_CLIENT_ID"),
+			ClientSecret: os.Getenv("SPOTIFY_CLIENT_SECRET"),
+		},
 	}
 
 	return Cfg
@@ -97,14 +121,21 @@ func LoadConfig() *config {
 
 func setDefaultValues() {
 	// API Config
-	viper.SetDefault("api.port", 3333)
+	viper.SetDefault("api.port", 3000)
+	viper.SetDefault("api.protocol", "http")
+
+	// Authentication Config
+	viper.SetDefault("Authentication.host", "127.0.0.1")
+	viper.SetDefault("Authentication.port", 3333)
+	viper.SetDefault("Authentication.protocol", "http")
 
 	// DB Config
-	viper.SetDefault("database.host", "postgres")
-	viper.SetDefault("database.port", "5432")
+	viper.SetDefault("database.host", "localhost")
+	viper.SetDefault("database.port", 5432)
 	viper.SetDefault("database.name", "youtofy")
 	viper.SetDefault("database.sslmode", "disable")
 
+	// Front Config
 	viper.SetDefault("front.host", "loving-deep-loon.ngrok-free.app")
 	viper.SetDefault("front.port", 443)
 	viper.SetDefault("front.protocol", "https")
