@@ -17,6 +17,13 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
+const (
+	YOUTUBE_AUTH_URI                    = "https://accounts.google.com/o/oauth2/auth"
+	YOUTUBE_TOKEN_URI                   = "https://oauth2.googleapis.com/token"
+	YOUTUBE_AUTH_PROVIDER_X509_CERT_URL = "https://www.googleapis.com/oauth2/v1/certs"
+	YOUTUBE_REDIRECT_URI                = "%s://%s"
+)
+
 func GetAuthURL() string {
 	config, err := loadFromConfig()
 	if err != nil {
@@ -117,14 +124,16 @@ func loadConfig() (*oauth2.Config, error) {
 }
 
 func loadFromConfig() (*oauth2.Config, error) {
+	protocol := configs.Cfg.FrontConfig.Protocol
+	host := configs.Cfg.FrontConfig.Host
 	config := &oauth2.Config{
 		ClientID:     configs.Cfg.YoutubeConfig.ClientId,
 		ClientSecret: configs.Cfg.YoutubeConfig.ClientSecret,
 		Endpoint: oauth2.Endpoint{
-			AuthURL:  configs.Cfg.YoutubeConfig.AuthUri,
-			TokenURL: configs.Cfg.YoutubeConfig.TokenUri,
+			AuthURL:  YOUTUBE_AUTH_URI,
+			TokenURL: YOUTUBE_TOKEN_URI,
 		},
-		RedirectURL: configs.Cfg.YoutubeConfig.RedirectUri,
+		RedirectURL: fmt.Sprintf(YOUTUBE_REDIRECT_URI, protocol, host),
 		Scopes:      []string{youtube.YoutubeReadonlyScope},
 	}
 	return config, nil

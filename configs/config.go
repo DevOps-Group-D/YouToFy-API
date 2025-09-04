@@ -10,6 +10,7 @@ import (
 type config struct {
 	ApiConfig     *ApiConfig
 	DBConfig      *DBConfig
+	FrontConfig   *FrontConfig
 	YoutubeConfig *YoutubeConfig
 }
 
@@ -34,6 +35,12 @@ type DBConfig struct {
 	Password string
 	Name     string
 	SslMode  string
+}
+
+type FrontConfig struct {
+	Host     string
+	Port     string
+	Protocol string
 }
 
 var Cfg *config
@@ -69,6 +76,11 @@ func LoadConfig() *config {
 			Name:     viper.GetString("database.name"),
 			SslMode:  viper.GetString("database.sslmode"),
 		},
+		FrontConfig: &FrontConfig{
+			Host:     viper.GetString("front.host"),
+			Port:     viper.GetString("front.port"),
+			Protocol: viper.GetString("front.protocol"),
+		},
 		YoutubeConfig: &YoutubeConfig{
 			ClientId:                os.Getenv("YOUTUBE_CLIENT_ID"),
 			ProjectId:               os.Getenv("YOUTUBE_PROJECT_ID"),
@@ -92,4 +104,8 @@ func setDefaultValues() {
 	viper.SetDefault("database.port", "5432")
 	viper.SetDefault("database.name", "youtofy")
 	viper.SetDefault("database.sslmode", "disable")
+
+	viper.SetDefault("front.host", "loving-deep-loon.ngrok-free.app")
+	viper.SetDefault("front.port", 443)
+	viper.SetDefault("front.protocol", "https")
 }
