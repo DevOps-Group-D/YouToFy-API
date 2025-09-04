@@ -3,4 +3,4 @@ run:
 
 args?=./...
 test:
-# 	go test $(args)
+ 	go test $(args)
