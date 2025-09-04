@@ -2,8 +2,11 @@ package youtube
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
+	authenticationService "github.com/DevOps-Group-D/YouToFy-API/services/authentication"
 	youtubeService "github.com/DevOps-Group-D/YouToFy-API/services/youtube"
 )
 
@@ -19,6 +22,21 @@ func (p YoutubeProvider) Login(w http.ResponseWriter, r *http.Request) {
 
 func (p YoutubeProvider) Save(w http.ResponseWriter, r *http.Request) {
 	// code := r.Header.Get("code")
+	username, err := r.Cookie("username")
+	if err != nil {
+		errMsg := fmt.Sprintf("Error getting username cookie: %s", err.Error())
+		http.Error(w, errMsg, http.StatusBadRequest)
+		fmt.Println(errMsg)
+		return
+	}
+	authorized := authenticationService.Authorize(username.Value, r.Cookies())
+	if !authorized {
+		errMsg := "Error: Unauthorized"
+		http.Error(w, errMsg, http.StatusUnauthorized)
+		fmt.Println(errMsg)
+		return
+	}
+
 	code := r.URL.Query().Get("code")
 	authToken, error := youtubeService.GetWebTokenFromCode(code)
 	if error != nil {
@@ -30,6 +48,15 @@ func (p YoutubeProvider) Save(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error marshalling token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	http.SetCookie(w, &http.Cookie{
+		Name:  "youtube_access_token",
+		Value: authToken.AccessToken})
+	http.SetCookie(w, &http.Cookie{
+		Name:  "youtube_token_type",
+		Value: authToken.TokenType})
+	http.SetCookie(w, &http.Cookie{
+		Name:  "youtube_expiry",
+		Value: authToken.Expiry.Format(time.RFC3339)})
 	w.Header().Add("Content-Type", "application/json")
 	w.Write(jsonResponse)
 	w.WriteHeader(http.StatusOK)
