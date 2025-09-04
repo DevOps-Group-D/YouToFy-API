@@ -1,6 +1,6 @@
 run:
-# 	docker compose up --build
+	docker compose up --build
 
 args?=./...
 test:
- 	go test $(args)
+	go test $(args)
