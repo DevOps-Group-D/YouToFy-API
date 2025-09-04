@@ -36,7 +36,7 @@ func (s *SpotifyService) GetAuthURL() string {
 	host := configs.Cfg.FrontConfig.Host
 	redirectRoute := fmt.Sprintf(REDIRECT_ROUTE, protocol, host)
 
-	state := utils.GenerateRandomString(16)
+	state := "spotify"
 	formatedScopes := strings.Join(scopes, "%20")
 
 	queryString := fmt.Sprintf("client_id=%s&response_type=%s&redirect_uri=%s&state=%s&scope=%s",

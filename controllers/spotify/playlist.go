@@ -37,13 +37,13 @@ func (p spotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlParts := strings.Split(r.URL.String(), "/")
-	if len(urlParts) < 4 || urlParts[3] == "" {
+	if len(urlParts) < 3 || urlParts[2] == "" {
 		errMsg := "Error getting playlistId in URL"
 		http.Error(w, errMsg, http.StatusBadRequest)
 		fmt.Println(errMsg)
 		return
 	}
-	playlistId := urlParts[3]
+	playlistId := urlParts[2]
 
 	playlist, err := p.Service.GetPlaylist(playlistId, accessToken.Value)
 	if err != nil {
@@ -102,13 +102,13 @@ func (p spotifyProvider) InsertPlaylist(w http.ResponseWriter, r *http.Request) 
 	}
 
 	urlParts := strings.Split(r.URL.String(), "/")
-	if len(urlParts) < 4 || urlParts[3] == "" {
+	if len(urlParts) < 3 || urlParts[2] == "" {
 		errMsg := "Error getting playlistId in URL"
 		http.Error(w, errMsg, http.StatusBadRequest)
 		fmt.Println(errMsg)
 		return
 	}
-	playlistId := urlParts[3]
+	playlistId := urlParts[2]
 
 	err = p.Service.InsertPlaylist(playlistId, username.Value, accessToken.Value, playlist)
 	if err != nil {
