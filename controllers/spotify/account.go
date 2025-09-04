@@ -1,26 +1,16 @@
 package spotify
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 
-	"github.com/DevOps-Group-D/YouToFy-API/configs"
 	spotifyModels "github.com/DevOps-Group-D/YouToFy-API/models/spotify"
-	spotifyRepository "github.com/DevOps-Group-D/YouToFy-API/repositories/spotify"
 	authenticationService "github.com/DevOps-Group-D/YouToFy-API/services/authentication"
-	spotifyService "github.com/DevOps-Group-D/YouToFy-API/services/spotify"
-	"github.com/DevOps-Group-D/YouToFy-API/utils"
 )
 
-const ACCESS_TOKEN_URL = "https://accounts.spotify.com/api/token"
-
-func (p SpotifyProvider) Login(w http.ResponseWriter, r *http.Request) {
+func (p spotifyProvider) Login(w http.ResponseWriter, r *http.Request) {
 	username, err := r.Cookie("username")
 	if err != nil {
 		errMsg := fmt.Sprintf("Error getting username cookie: %s", err.Error())
@@ -37,9 +27,8 @@ func (p SpotifyProvider) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUrl := spotifyService.GetAuthURL()
+	authUrl := p.Service.GetAuthURL()
 
-	fmt.Println(authUrl)
 	http.Redirect(w, r, authUrl, http.StatusTemporaryRedirect)
 
 	response := "Spotify authorization route called"
@@ -49,7 +38,8 @@ func (p SpotifyProvider) Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(302)
 }
 
-func (p SpotifyProvider) Save(w http.ResponseWriter, r *http.Request) {
+// TODO: Move it to authentication service
+func (p spotifyProvider) Save(w http.ResponseWriter, r *http.Request) {
 	var authReq spotifyModels.AuthenticationRequest
 
 	err := json.NewDecoder(r.Body).Decode(&authReq)
@@ -76,63 +66,21 @@ func (p SpotifyProvider) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body := url.Values{}
-	body.Set("grant_type", "authorization_code")
-	body.Set("code", authReq.Code)
-	body.Set("redirect_uri", fmt.Sprintf("%s://%s", configs.Cfg.FrontConfig.Protocol, configs.Cfg.FrontConfig.Host))
-
-	req, err := http.NewRequest(http.MethodPost, ACCESS_TOKEN_URL, strings.NewReader(body.Encode()))
+	accessToken, err := p.Service.GetAccessToken(username.Value, authReq.Code)
 	if err != nil {
-		errMsg := fmt.Sprintf("Error creating post request: %s", err.Error())
-		http.Error(w, errMsg, http.StatusBadRequest)
-		fmt.Println(errMsg)
-		return
-	}
-
-	authorization := fmt.Sprintf("%s:%s", configs.Cfg.SpotifyConfig.ClientId, configs.Cfg.SpotifyConfig.ClientSecret)
-
-	req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(authorization)))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	res, err := utils.Client.Do(req)
-	if err != nil {
-		errMsg := fmt.Sprintf("Error making authorization request: %s", err.Error())
-		http.Error(w, errMsg, http.StatusBadRequest)
-		fmt.Println(errMsg)
-		return
-	}
-
-	var accessTokenRes spotifyModels.AccessTokenResponse
-
-	raw, err := io.ReadAll(res.Body)
-	if err != nil {
-		errMsg := fmt.Sprintf("Error reading response body: %s", err.Error())
+		errMsg := fmt.Sprintf("Error getting access token %s", err.Error())
 		http.Error(w, errMsg, http.StatusInternalServerError)
-		fmt.Println(errMsg)
-		return
-	}
-
-	err = json.Unmarshal(raw, &accessTokenRes)
-	if err != nil {
-		errMsg := fmt.Sprintf("Error decoding access token response body: %s", err.Error())
-		http.Error(w, errMsg, http.StatusBadRequest)
-		fmt.Println(errMsg)
-		return
-	}
-
-	err = spotifyRepository.UpdateAccessToken(username.Value, accessTokenRes.AccessToken)
-	if err != nil {
-		errMsg := fmt.Sprintf("Error updating spotify access token: %s", err.Error())
-		http.Error(w, errMsg, http.StatusBadRequest)
 		fmt.Println(errMsg)
 		return
 	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "spotify_access_token",
-		Value:    accessTokenRes.AccessToken,
+		Value:    accessToken.AccessToken,
 		Expires:  time.Now().Add(time.Hour),
 		Path:     "/",
 		HttpOnly: true,
 	})
+
+	w.WriteHeader(200)
 }
