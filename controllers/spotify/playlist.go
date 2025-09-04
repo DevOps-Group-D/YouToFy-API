@@ -3,28 +3,13 @@ package spotify
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
-	spotifyModels "github.com/DevOps-Group-D/YouToFy-API/models/spotify"
 	"github.com/DevOps-Group-D/YouToFy-API/services/authentication"
-	"github.com/DevOps-Group-D/YouToFy-API/utils"
 )
 
-const GET_PLAYLISTS_URL = "https://api.spotify.com/v1/playlists/%s/tracks"
-
-func (p SpotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
-	playlistId := strings.Split(r.URL.String(), "/")[3]
-
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(GET_PLAYLISTS_URL, playlistId), nil)
-	if err != nil {
-		errMsg := fmt.Sprintf("Error creating get spotify playlist request: %s", err.Error())
-		http.Error(w, errMsg, http.StatusBadRequest)
-		fmt.Println(errMsg)
-		return
-	}
-
+func (p spotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("username")
 	if err != nil {
 		errMsg := fmt.Sprintf("Missing username cookie: %s", err.Error())
@@ -50,44 +35,32 @@ func (p SpotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken.Value))
+	urlParts := strings.Split(r.URL.String(), "/")
+	if len(urlParts) < 4 || urlParts[3] == "" {
+		errMsg := "Error getting playlistId in URL"
+		http.Error(w, errMsg, http.StatusBadRequest)
+		fmt.Println(errMsg)
+		return
+	}
+	playlistId := urlParts[3]
 
-	res, err := utils.Client.Do(req)
+	playlist, err := p.Service.GetPlaylist(username, playlistId, accessToken.Value)
 	if err != nil {
-		errMsg := fmt.Sprintf("Error making get spotify playlist request: %s", err.Error())
-		http.Error(w, errMsg, http.StatusBadRequest)
+		errMsg := "Error getting playlist"
+		http.Error(w, errMsg, http.StatusInternalServerError)
 		fmt.Println(errMsg)
 		return
 	}
 
-	if res.StatusCode != http.StatusOK {
-		errorBody, err := io.ReadAll(res.Body)
-		if err != nil {
-			errMsg := fmt.Sprintf("Error reading error body: %s", errorBody)
-			http.Error(w, errMsg, http.StatusBadRequest)
-			fmt.Println(errMsg)
-			return
-		}
-
-		errMsg := fmt.Sprintf("Error making get spotify playlist request: %s", errorBody)
-		http.Error(w, errMsg, http.StatusBadRequest)
-		fmt.Println(errMsg)
-		return
-	}
-
-	body, _ := io.ReadAll(res.Body)
-	fmt.Println(string(body))
-
-	var playlistt spotifyModels.Playlist
-
-	err = json.NewDecoder(res.Body).Decode(&playlistt)
+	playlistJson, err := json.Marshal(playlist)
 	if err != nil {
-		errMsg := fmt.Sprintf("Error decoding playlist: %s", err.Error())
-		http.Error(w, errMsg, http.StatusBadRequest)
+		errMsg := "Error marshalling playlist"
+		http.Error(w, errMsg, http.StatusInternalServerError)
 		fmt.Println(errMsg)
 		return
 	}
 
-	a, _ := json.Marshal(playlistt)
-	fmt.Println(string(a))
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(playlistJson))
 }
