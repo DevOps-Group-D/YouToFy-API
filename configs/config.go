@@ -101,6 +101,7 @@ func LoadConfig() *config {
 			Port:     viper.GetString("front.port"),
 			Protocol: viper.GetString("front.protocol"),
 		},
+		// TODO: change some of these to be outside of .env
 		YoutubeConfig: &YoutubeConfig{
 			ClientId:                os.Getenv("YOUTUBE_CLIENT_ID"),
 			ProjectId:               os.Getenv("YOUTUBE_PROJECT_ID"),
