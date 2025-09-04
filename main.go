@@ -57,7 +57,7 @@ func main() {
 func getProvider(provider utils.Provider) interfaces.Provider {
 	switch provider {
 	case utils.SpotifyProvider:
-		return spotify.SpotifyProvider{}
+		return spotify.NewSpotifyProvider()
 	default:
 		return nil
 	}
