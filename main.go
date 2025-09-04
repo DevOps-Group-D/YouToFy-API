@@ -9,6 +9,7 @@ import (
 	"github.com/DevOps-Group-D/YouToFy-API/configs"
 	"github.com/DevOps-Group-D/YouToFy-API/controllers/interfaces"
 	"github.com/DevOps-Group-D/YouToFy-API/controllers/spotify"
+	"github.com/DevOps-Group-D/YouToFy-API/controllers/youtube"
 	"github.com/DevOps-Group-D/YouToFy-API/utils"
 	"github.com/go-chi/chi"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
@@ -58,6 +59,8 @@ func getProvider(provider utils.Provider) interfaces.Provider {
 	switch provider {
 	case utils.SpotifyProvider:
 		return spotify.SpotifyProvider{}
+	case utils.YoutubeProvider:
+		return youtube.YoutubeProvider{}
 	default:
 		return nil
 	}
