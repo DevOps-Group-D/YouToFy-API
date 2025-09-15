@@ -3,14 +3,12 @@ package servicesAcc
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/DevOps-Group-D/YouToFy-API/configs"
 	youtubeRepository "github.com/DevOps-Group-D/YouToFy-API/repositories/youtube"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
@@ -93,19 +91,6 @@ func GetWebTokenFromCode(code string) (*oauth2.Token, error) {
 		return nil, fmt.Errorf("unable to exchange code for token: %v", err)
 	}
 	return token, nil
-}
-
-// TODO: Remove it
-func loadConfig() (*oauth2.Config, error) {
-	b, err := os.ReadFile("client_secret.json")
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
-	}
-	config, err := google.ConfigFromJSON(b, youtube.YoutubeReadonlyScope)
-	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-	return config, nil
 }
 
 func loadFromConfig() (*oauth2.Config, error) {
