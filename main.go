@@ -50,6 +50,7 @@ func main() {
 
 	// Registering post routes
 	router.Post("/save", providerImpl.Save)
+	router.Post("/playlist/{playlistId}", providerImpl.InsertPlaylist)
 
 	fmt.Println("Listening and serving on port", cfg.ApiConfig.Port)
 	http.ListenAndServe(fmt.Sprintf(":%s", cfg.ApiConfig.Port), router)

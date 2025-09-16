@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/DevOps-Group-D/YouToFy-API/configs"
-	youtubeModels "github.com/DevOps-Group-D/YouToFy-API/models/spotify"
+	youtubeModels "github.com/DevOps-Group-D/YouToFy-API/models/youtube"
 	youtubeRepository "github.com/DevOps-Group-D/YouToFy-API/repositories/youtube"
 
 	"time"
@@ -33,23 +33,23 @@ func GetAuthURL() string {
 	return authURL
 }
 
-func GetPlaylist(paylistId string, token *oauth2.Token) (youtubeModels.Playlist, error) {
+func GetPlaylist(playlistId string, token *oauth2.Token) (youtubeModels.Playlist, error) {
+	var playlist youtubeModels.Playlist
 	config, err := loadFromConfig()
 	if err != nil {
-		return youtubeModels.Playlist{}, fmt.Errorf("error loading config: %v", err)
+		return playlist, fmt.Errorf("error loading config: %v", err)
 	}
 	ctx := context.Background()
 	client := config.Client(ctx, token)
 	opts := option.WithHTTPClient(client)
 	service, err := youtube.NewService(ctx, opts)
 	if err != nil {
-		return youtubeModels.Playlist{}, fmt.Errorf("error creating YouTube service: %v", err)
+		return playlist, fmt.Errorf("error creating YouTube service: %v", err)
 	}
 	part := []string{"snippet,contentDetails"}
-	call := service.PlaylistItems.List(part).PlaylistId(paylistId)
-	var playlist youtubeModels.Playlist
-	playlist.PlaylistID = paylistId
-	playlist.Uri = paylistId
+	call := service.PlaylistItems.List(part).PlaylistId(playlistId)
+	playlist.PlaylistID = playlistId
+	playlist.Uri = playlistId
 	var items []youtubeModels.Item
 	playlist.Items = items
 	err = call.Pages(ctx, func(response *youtube.PlaylistItemListResponse) error {
@@ -106,10 +106,69 @@ func GetPlaylist(paylistId string, token *oauth2.Token) (youtubeModels.Playlist,
 		return nil
 	})
 	if err != nil {
-		return youtubeModels.Playlist{}, fmt.Errorf("error retrieving playlist items: %v", err)
+		return playlist, fmt.Errorf("error retrieving playlist items: %v", err)
 	}
 	return playlist, nil
 
+}
+
+func InsertPlaylist(playlistId string, token *oauth2.Token, playlist youtubeModels.Playlist) error {
+
+	config, err := loadFromConfig()
+	if err != nil {
+		return fmt.Errorf("error loading config: %v", err)
+	}
+	ctx := context.Background()
+	client := config.Client(ctx, token)
+	opts := option.WithHTTPClient(client)
+	service, err := youtube.NewService(ctx, opts)
+	if err != nil {
+		return fmt.Errorf("error creating YouTube service: %v", err)
+	}
+
+	for _, item := range playlist.Items {
+		music := item.Track
+		musicName := music.Name
+		artistName := music.Artists[0].Name
+
+		search := fmt.Sprintf("%s %s", musicName, artistName)
+		videoId, err := findMusic(search, service)
+		if err != nil {
+			fmt.Printf("could not found %s from %s\n", musicName, artistName)
+			fmt.Println(err.Error())
+			continue
+		}
+		part := []string{"snippet"}
+		playlistItem := &youtube.PlaylistItem{
+			Snippet: &youtube.PlaylistItemSnippet{
+				PlaylistId: playlistId,
+				ResourceId: &youtube.ResourceId{
+					Kind:    "youtube#video",
+					VideoId: videoId,
+				},
+			},
+		}
+		call := service.PlaylistItems.Insert(part, playlistItem)
+		_, err = call.Do()
+		if err != nil {
+			fmt.Printf("could not insert %s from %s\n", musicName, artistName)
+			fmt.Println(err.Error())
+			continue
+		}
+		// musicFoundUri := musicFound.URI
+	}
+
+	return nil
+}
+
+func findMusic(search string, service *youtube.Service) (string, error) {
+	part := []string{"id,snippet"}
+	call := service.Search.List(part).Q(search).MaxResults(1).Type("video")
+	response, err := call.Do()
+	if err != nil {
+		return "", err
+	}
+	return response.Items[0].Id.VideoId, nil
 }
 
 func GetYouTubeCredentials(username string) (*oauth2.Token, error) {
@@ -169,7 +228,7 @@ func loadFromConfig() (*oauth2.Config, error) {
 			TokenURL: YOUTUBE_TOKEN_URI,
 		},
 		RedirectURL: fmt.Sprintf(YOUTUBE_REDIRECT_URI, protocol, host),
-		Scopes:      []string{youtube.YoutubeReadonlyScope},
+		Scopes:      []string{youtube.YoutubepartnerScope},
 	}
 	return config, nil
 }
