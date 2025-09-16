@@ -1,6 +1,7 @@
 package youtube
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -31,7 +32,7 @@ func (p youtubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 	var authCode *oauth2.Token
 	accessToken, err := r.Cookie("youtube_access_token")
 	if err != nil {
-		errMsg := fmt.Sprintf("Error getting spotify_access_token cookie: %s", err.Error())
+		errMsg := fmt.Sprintf("Error getting youtube_access_token cookie: %s", err.Error())
 		http.Error(w, errMsg, http.StatusUnauthorized)
 		fmt.Println(errMsg)
 		return
@@ -44,14 +45,20 @@ func (p youtubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	videos, err := youtubeService.GetPlaylist(playlistId, authCode)
+	playlist, err := youtubeService.GetPlaylist(playlistId, authCode)
 	if err != nil {
 		http.Error(w, "error retrieving playlist: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	jsonResponse := `{"videos": ["` + strings.Join(videos, `","`) + `"]}`
+	playlistJson, err := json.Marshal(playlist)
+	if err != nil {
+		errMsg := "Error marshalling playlist"
+		http.Error(w, errMsg, http.StatusInternalServerError)
+		fmt.Println(errMsg)
+		return
+	}
 	w.Header().Add("Content-Type", "application/json")
-	w.Write([]byte(jsonResponse))
+	w.Write([]byte(playlistJson))
 	w.WriteHeader(http.StatusOK)
 }
 
