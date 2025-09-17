@@ -38,7 +38,3 @@ type Image struct {
 	URL    string `json:"url"`
 	Width  int    `json:"width"`
 }
-
-type Tracks struct {
-	Items []Track `json:"items"`
-}
