@@ -155,7 +155,6 @@ func InsertPlaylist(playlistId string, token *oauth2.Token, playlist youtubeMode
 			fmt.Println(err.Error())
 			continue
 		}
-		// musicFoundUri := musicFound.URI
 	}
 
 	return nil
@@ -184,10 +183,7 @@ func GetYouTubeCredentials(username string) (*oauth2.Token, error) {
 
 func SaveToken(username string, token *oauth2.Token) error {
 	_, Credentials_err := youtubeRepository.GetYouTubeCredentials(username)
-	// fmt.Println(res)
-	// fmt.Printf("will update credentials?: %v\n", Credentials_err)
 	if Credentials_err == nil {
-		// fmt.Println("updating credentials")
 		err := youtubeRepository.UpdateYouTubeCredentials(username, token.AccessToken)
 		if err != nil {
 			return fmt.Errorf("error updating YouTube credentials: %v", err)
