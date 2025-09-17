@@ -47,7 +47,7 @@ func (p spotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 
 	playlist, err := p.Service.GetPlaylist(playlistId, accessToken.Value)
 	if err != nil {
-		errMsg := "Error getting playlist"
+		errMsg := "Error getting playlist: " + err.Error()
 		http.Error(w, errMsg, http.StatusInternalServerError)
 		fmt.Println(errMsg)
 		return
@@ -55,7 +55,7 @@ func (p spotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 
 	playlistJson, err := json.Marshal(playlist)
 	if err != nil {
-		errMsg := "Error marshalling playlist"
+		errMsg := "Error marshalling playlist: " + err.Error()
 		http.Error(w, errMsg, http.StatusInternalServerError)
 		fmt.Println(errMsg)
 		return
@@ -110,7 +110,7 @@ func (p spotifyProvider) InsertPlaylist(w http.ResponseWriter, r *http.Request) 
 	}
 	playlistId := urlParts[2]
 
-	err = p.Service.InsertPlaylist(playlistId, username.Value, accessToken.Value, playlist)
+	err = p.Service.InsertPlaylist(playlistId, accessToken.Value, playlist)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error inserting musics into playlist: %s", err)
 		http.Error(w, errMsg, http.StatusInternalServerError)
