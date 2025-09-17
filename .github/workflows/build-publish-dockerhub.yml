@@ -1,0 +1,25 @@
+name: Build and Publish to Dockerhub
+
+on:
+  release:
+    types: [published]
+
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_USERNAME }}/youtofy-api:${{ github.event.release.name }}
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{ env.DOCKER_IMAGE }}
+
+    - name: Login to Docker Hub
+      run: docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: Publish the Docker image
+      run: docker push ${{ env.DOCKER_IMAGE }}
