@@ -49,7 +49,7 @@ func GetPlaylist(playlistId string, token *oauth2.Token) (*youtubeModels.Playlis
 	part := []string{"snippet,contentDetails"}
 	call := service.PlaylistItems.List(part).PlaylistId(playlistId)
 	playlist.PlaylistID = playlistId
-	playlist.Uri = playlistId
+	playlist.Uri = "youtube.com/playlist?list=" + playlistId
 	var items []youtubeModels.Item
 	playlist.Items = items
 	err = call.Pages(ctx, func(response *youtube.PlaylistItemListResponse) error {
