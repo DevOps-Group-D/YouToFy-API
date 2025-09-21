@@ -138,8 +138,7 @@ func (y *YoutubeService) InsertPlaylist(playlistId string, token *oauth2.Token, 
 		search := fmt.Sprintf("%s %s", musicName, artistName)
 		videoId, err := y.findMusic(search, service)
 		if err != nil {
-			fmt.Printf("could not found %s from %s\n", musicName, artistName)
-			fmt.Println(err.Error())
+			fmt.Printf("could not found %s from %s due to %v\n", musicName, artistName, err.Error())
 			continue
 		}
 		part := []string{"snippet"}
