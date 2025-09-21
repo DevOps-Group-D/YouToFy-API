@@ -167,7 +167,7 @@ func (s *SpotifyService) InsertPlaylist(playlistId string, accessToken string, p
 		return err
 	}
 
-	if res.StatusCode != http.StatusOK {
+	if res.StatusCode != http.StatusCreated {
 		return fmt.Errorf("spotify API returned status %d", res.StatusCode)
 	}
 
