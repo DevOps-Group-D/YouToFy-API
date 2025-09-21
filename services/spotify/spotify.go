@@ -97,33 +97,39 @@ func (s *SpotifyService) GetAccessToken(username string, code string) (*spotifyM
 func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*models.Playlist, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(GET_PLAYLISTS_URL, playlistId), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating new request: %s", err)
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
 	res, err := utils.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error making get spotify playlist request: %s", err)
 	}
 
 	if res.StatusCode != http.StatusOK {
 		errorBody, err := io.ReadAll(res.Body)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error reading body: %s", err)
 		}
 
-		return nil, fmt.Errorf("Error making get spotify playlist request: %s", errorBody)
+		return nil, fmt.Errorf("error making get spotify playlist request: %s", errorBody)
 	}
 
-	var playlist models.Playlist
+	var playlist spotifyModels.SearchPlaylist
 
 	err = json.NewDecoder(res.Body).Decode(&playlist)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding spotify playlist response: %s", err)
 	}
 
-	return &playlist, nil
+	finalPlaylist := models.Playlist{
+		PlaylistID: playlistId,
+		Items:      playlist.Items,
+		Uri:        playlist.Href,
+	}
+
+	return &finalPlaylist, nil
 }
 
 func (s *SpotifyService) InsertPlaylist(playlistId string, accessToken string, playlist *models.Playlist) error {
