@@ -134,8 +134,7 @@ func (y *YoutubeService) InsertPlaylist(playlistId string, token *oauth2.Token, 
 		musicName := music.Name
 		artistName := music.Artists[0].Name
 
-		search := fmt.Sprintf("%s %s", musicName, artistName)
-		videoId, err := y.findMusic(search, service)
+		videoId, err := y.findMusic(musicName, service)
 		if err != nil {
 			fmt.Printf("could not found %s from %s due to %v\n", musicName, artistName, err.Error())
 			continue
@@ -162,9 +161,9 @@ func (y *YoutubeService) InsertPlaylist(playlistId string, token *oauth2.Token, 
 	return nil
 }
 
-func (y *YoutubeService) findMusic(search string, service *youtube.Service) (string, error) {
+func (y *YoutubeService) findMusic(musicName string, service *youtube.Service) (string, error) {
 	part := []string{"id,snippet"}
-	call := service.Search.List(part).Q(search).MaxResults(1).Type("video")
+	call := service.Search.List(part).Q(musicName).MaxResults(1).Type("video")
 	response, err := call.Do()
 	if err != nil {
 		return "", err
