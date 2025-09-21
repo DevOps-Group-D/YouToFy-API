@@ -171,17 +171,6 @@ func (y *YoutubeService) findMusic(musicName string, service *youtube.Service) (
 	return response.Items[0].Id.VideoId, nil
 }
 
-func (y *YoutubeService) GetYouTubeCredentials(username string) (*oauth2.Token, error) {
-	credentials, err := y.Repository.GetYouTubeCredentials(username)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving YouTube credentials: %v", err)
-	}
-	token := &oauth2.Token{
-		AccessToken: credentials.AccessToken,
-	}
-	return token, nil
-}
-
 func (y *YoutubeService) SaveToken(username string, token *oauth2.Token) error {
 	err := y.Repository.UpdateYouTubeCredentials(username, token.AccessToken)
 	if err != nil {

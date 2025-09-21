@@ -8,6 +8,7 @@ type Account struct {
 	SessionToken sql.NullString `json:"session_token,omitempty"`
 	CsrfToken    sql.NullString `json:"csrf_token,omitempty"`
 	Spotify      *Spotify       `json:"spotify"`
+	Youtube      *Youtube       `json:"youtube"`
 }
 
 type Spotify struct {
@@ -15,6 +16,5 @@ type Spotify struct {
 }
 
 type Youtube struct {
-	AccountUsername string `json:"account_username"`
-	AccessToken     string `json:"access_token"`
+	AccessToken string `json:"access_token"`
 }
