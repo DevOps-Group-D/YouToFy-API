@@ -1,10 +1,11 @@
-package spotify
+package models
 
 import "time"
 
 type Playlist struct {
 	PlaylistID string `json:"playlist_id"`
 	Items      []Item `json:"items,omitempty"`
+	Uri        string `json:"uri"`
 }
 
 type Item struct {

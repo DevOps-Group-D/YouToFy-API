@@ -19,7 +19,14 @@ import (
 
 func main() {
 	// Reading args from cli
+	if len(os.Args) < 1 {
+		log.Fatalf("Usage: %s <provider> <port>(optional)", os.Args[0])
+	}
 	provider := os.Args[1]
+	port := ""
+	if len(os.Args) > 2 {
+		port = os.Args[2]
+	}
 
 	// Reading .env variables
 	err := godotenv.Load()
@@ -28,7 +35,10 @@ func main() {
 	}
 
 	// Initializing configs
-	cfg := configs.LoadConfig()
+	cfg := configs.LoadConfig(utils.GetProvider(provider))
+	if port != "" {
+		cfg.GetProvider().Port = port
+	}
 
 	// Listening and serving service
 	router := chi.NewRouter()
@@ -51,16 +61,22 @@ func main() {
 	// Registering post routes
 	router.Post("/save", providerImpl.Save)
 
-	fmt.Println("Listening and serving on port", cfg.ApiConfig.Port)
-	http.ListenAndServe(fmt.Sprintf(":%s", cfg.ApiConfig.Port), router)
+	// Registering patch routes
+	router.Patch("/playlist/{playlistId}", providerImpl.InsertPlaylist)
+
+	// Registering patch routes
+	router.Patch("/playlist/{playlistId}", providerImpl.InsertPlaylist)
+
+	fmt.Println("Listening and serving on port", cfg.GetProvider().Port)
+	http.ListenAndServe(fmt.Sprintf(":%s", cfg.GetProvider().Port), router)
 }
 
 func getProvider(provider utils.Provider) interfaces.Provider {
 	switch provider {
 	case utils.SpotifyProvider:
-		return spotify.SpotifyProvider{}
+		return spotify.NewSpotifyProvider()
 	case utils.YoutubeProvider:
-		return youtube.YoutubeProvider{}
+		return youtube.NewYoutubeProvider()
 	default:
 		return nil
 	}

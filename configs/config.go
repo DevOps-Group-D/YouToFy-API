@@ -4,21 +4,17 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/DevOps-Group-D/YouToFy-API/utils"
 	"github.com/spf13/viper"
 )
 
 type config struct {
-	ApiConfig            *ApiConfig
+	AuthenticationConfig *AuthenticationConfig
 	DBConfig             *DBConfig
 	FrontConfig          *FrontConfig
+	Provider             utils.Provider
 	SpotifyConfig        *SpotifyConfig
-	AuthenticationConfig *AuthenticationConfig
 	YoutubeConfig        *YoutubeConfig
-}
-
-type ApiConfig struct {
-	Port     string
-	Protocol string
 }
 
 type AuthenticationConfig struct {
@@ -27,34 +23,42 @@ type AuthenticationConfig struct {
 	Protocol string
 }
 
+type ProviderConfig struct {
+	Port     string
+	Protocol string
+}
+
 type YoutubeConfig struct {
-	ClientId                string
-	ProjectId               string
-	AuthUri                 string
-	TokenUri                string
+	*ProviderConfig
 	AuthProviderX509CertUrl string
+	AuthUri                 string
+	ClientId                string
 	ClientSecret            string
+	ProjectId               string
 	RedirectUri             string
+	TokenUri                string
+}
+
+type SpotifyConfig struct {
+	*ProviderConfig
+	ClientId     string
+	ClientSecret string
+	ProjectId    string
 }
 
 type DBConfig struct {
 	Host     string
-	Port     string
-	User     string
-	Password string
 	Name     string
+	Password string
+	Port     string
 	SslMode  string
+	User     string
 }
 
 type FrontConfig struct {
 	Host     string
 	Port     string
 	Protocol string
-}
-
-type SpotifyConfig struct {
-	ClientId     string
-	ClientSecret string
 }
 
 var Cfg *config
@@ -65,13 +69,13 @@ func init() {
 	viper.AddConfigPath(".")
 }
 
-func LoadConfig() *config {
+func LoadConfig(provider utils.Provider) *config {
 	if Cfg != nil {
 		fmt.Println("Error loading config: Config already loaded")
 		return Cfg
 	}
 
-	setDefaultValues()
+	setDefaultValues(provider)
 
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -79,10 +83,6 @@ func LoadConfig() *config {
 	}
 
 	Cfg = &config{
-		ApiConfig: &ApiConfig{
-			Port:     viper.GetString("api.port"),
-			Protocol: viper.GetString("api.protocol"),
-		},
 		AuthenticationConfig: &AuthenticationConfig{
 			Host:     viper.GetString("authentication.host"),
 			Port:     viper.GetString("authentication.port"),
@@ -101,28 +101,57 @@ func LoadConfig() *config {
 			Port:     viper.GetString("front.port"),
 			Protocol: viper.GetString("front.protocol"),
 		},
-		YoutubeConfig: &YoutubeConfig{
-			ClientId:                os.Getenv("YOUTUBE_CLIENT_ID"),
-			ProjectId:               os.Getenv("YOUTUBE_PROJECT_ID"),
-			AuthUri:                 os.Getenv("YOUTUBE_AUTH_URI"),
-			TokenUri:                os.Getenv("YOUTUBE_TOKEN_URI"),
-			AuthProviderX509CertUrl: os.Getenv("YOUTUBE_AUTH_PROVIDER_X509_CERT_URL"),
-			ClientSecret:            os.Getenv("YOUTUBE_CLIENT_SECRET"),
-			RedirectUri:             os.Getenv("YOUTUBE_REDIRECT_URI"),
-		},
+		Provider: utils.GetProvider(viper.GetString("provider")),
 		SpotifyConfig: &SpotifyConfig{
 			ClientId:     os.Getenv("SPOTIFY_CLIENT_ID"),
 			ClientSecret: os.Getenv("SPOTIFY_CLIENT_SECRET"),
+			ProviderConfig: &ProviderConfig{
+				Port:     viper.GetString("spotify.port"),
+				Protocol: viper.GetString("spotify.protocol"),
+			},
+			ProjectId: viper.GetString("spotify.project_id"),
+		},
+		// TODO: change some of these to be outside of .env
+		YoutubeConfig: &YoutubeConfig{
+			AuthProviderX509CertUrl: os.Getenv("YOUTUBE_AUTH_PROVIDER_X509_CERT_URL"),
+			AuthUri:                 os.Getenv("YOUTUBE_AUTH_URI"),
+			ClientId:                os.Getenv("YOUTUBE_CLIENT_ID"),
+			ClientSecret:            os.Getenv("YOUTUBE_CLIENT_SECRET"),
+			ProviderConfig: &ProviderConfig{
+				Port:     viper.GetString("youtube.port"),
+				Protocol: viper.GetString("youtube.protocol"),
+			},
+			ProjectId:   os.Getenv("YOUTUBE_PROJECT_ID"),
+			RedirectUri: os.Getenv("YOUTUBE_REDIRECT_URI"),
+			TokenUri:    os.Getenv("YOUTUBE_TOKEN_URI"),
 		},
 	}
 
 	return Cfg
 }
 
-func setDefaultValues() {
-	// API Config
-	viper.SetDefault("api.port", 3000)
-	viper.SetDefault("api.protocol", "http")
+func (c *config) GetProvider() *ProviderConfig {
+	switch Cfg.Provider {
+	case utils.SpotifyProvider:
+		return Cfg.SpotifyConfig.ProviderConfig
+	case utils.YoutubeProvider:
+		return Cfg.YoutubeConfig.ProviderConfig
+	default:
+		return nil
+	}
+}
+
+func setDefaultValues(provider utils.Provider) {
+	// Provider
+	viper.SetDefault("provider", provider.GetString())
+
+	// Spotify port and protocol
+	viper.SetDefault("spotify.port", 5001)
+	viper.SetDefault("spotify.protocol", "http")
+
+	// Youtube port and protocol
+	viper.SetDefault("youtube.port", 5002)
+	viper.SetDefault("youtube.protocol", "http")
 
 	// Authentication Config
 	viper.SetDefault("Authentication.host", "127.0.0.1")

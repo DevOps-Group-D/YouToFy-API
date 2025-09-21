@@ -5,3 +5,8 @@ type AuthenticationRequest struct {
 	Error string `json:"error"`
 	State string `json:"state"`
 }
+
+type InsertPlaylistRequest struct {
+	Uris     []string `json:"uris"`
+	Position int      `json:"position"`
+}
