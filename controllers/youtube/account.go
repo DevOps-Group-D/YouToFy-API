@@ -7,11 +7,10 @@ import (
 
 	youtubeModels "github.com/DevOps-Group-D/YouToFy-API/models/youtube"
 	authenticationService "github.com/DevOps-Group-D/YouToFy-API/services/authentication"
-	youtubeService "github.com/DevOps-Group-D/YouToFy-API/services/youtube"
 )
 
 func (p youtubeProvider) Login(w http.ResponseWriter, r *http.Request) {
-	authUrl := youtubeService.GetAuthURL()
+	authUrl := p.Service.GetAuthURL()
 	http.Redirect(w, r, authUrl, http.StatusTemporaryRedirect)
 	response := `{"authUrl": "` + authUrl + `"}`
 
@@ -46,7 +45,7 @@ func (p youtubeProvider) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authToken, error := youtubeService.GetWebTokenFromCode(authReq.Code)
+	authToken, error := p.Service.GetWebTokenFromCode(authReq.Code)
 	if error != nil {
 		http.Error(w, "error retrieving token from code: "+error.Error(), http.StatusInternalServerError)
 		return
@@ -57,7 +56,7 @@ func (p youtubeProvider) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := youtubeService.SaveToken(username.Value, authToken); err != nil {
+	if err := p.Service.SaveToken(username.Value, authToken); err != nil {
 		http.Error(w, "error saving youtube token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
