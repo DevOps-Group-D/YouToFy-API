@@ -9,7 +9,6 @@ import (
 
 	youtubeModels "github.com/DevOps-Group-D/YouToFy-API/models/youtube"
 	authenticationService "github.com/DevOps-Group-D/YouToFy-API/services/authentication"
-	youtubeService "github.com/DevOps-Group-D/YouToFy-API/services/youtube"
 	"golang.org/x/oauth2"
 )
 
@@ -46,7 +45,7 @@ func (p youtubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var playlist *youtubeModels.Playlist
-	playlist, err = youtubeService.GetPlaylist(playlistId, authCode)
+	playlist, err = p.Service.GetPlaylist(playlistId, authCode)
 	if err != nil {
 		http.Error(w, "error retrieving playlist: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -115,7 +114,7 @@ func (p youtubeProvider) InsertPlaylist(w http.ResponseWriter, r *http.Request) 
 	}
 	playlistId := urlParts[2]
 
-	err = youtubeService.InsertPlaylist(playlistId, authCode, playlist)
+	err = p.Service.InsertPlaylist(playlistId, authCode, playlist)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error inserting musics into playlist: %s", err)
 		http.Error(w, errMsg, http.StatusInternalServerError)

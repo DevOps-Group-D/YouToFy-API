@@ -5,6 +5,8 @@ import (
 	"github.com/DevOps-Group-D/YouToFy-API/models/authentication"
 )
 
+type YoutubeRepository struct{}
+
 const (
 	INSERT_QUERY_YOUTUBECREDENTIALS = `INSERT INTO youtube (account_username, access_token) VALUES ($1, $2)`
 	SELECT_QUERY_YOUTUBECREDENTIALS = `SELECT * FROM youtube count WHERE account_username = $1`
@@ -12,7 +14,7 @@ const (
 )
 
 // TODO: Add a struct to all these methods like Spotify
-func InsertYouTubeCredentials(
+func (y *YoutubeRepository) InsertYouTubeCredentials(
 	Username string,
 	AccessToken string,
 ) error {
@@ -34,7 +36,7 @@ func InsertYouTubeCredentials(
 	return nil
 }
 
-func GetYouTubeCredentials(username string) (*authentication.Youtube, error) {
+func (y *YoutubeRepository) GetYouTubeCredentials(username string) (*authentication.Youtube, error) {
 	conn, err := database.Connect()
 	if err != nil {
 		return nil, err
@@ -57,7 +59,7 @@ func GetYouTubeCredentials(username string) (*authentication.Youtube, error) {
 	return youTubeCredentials, nil
 }
 
-func UpdateYouTubeCredentials(
+func (y *YoutubeRepository) UpdateYouTubeCredentials(
 	Username string,
 	AccessToken string,
 ) error {

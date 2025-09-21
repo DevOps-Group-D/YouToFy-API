@@ -1,7 +1,18 @@
 package youtube
 
-type youtubeProvider struct{}
+import (
+	youtubeRepository "github.com/DevOps-Group-D/YouToFy-API/repositories/youtube"
+	youtubeService "github.com/DevOps-Group-D/YouToFy-API/services/youtube"
+)
+
+type youtubeProvider struct {
+	Service *youtubeService.YoutubeService
+}
 
 func NewYoutubeProvider() *youtubeProvider {
-	return &youtubeProvider{}
+	return &youtubeProvider{
+		Service: &youtubeService.YoutubeService{
+			Repository: &youtubeRepository.YoutubeRepository{},
+		},
+	}
 }

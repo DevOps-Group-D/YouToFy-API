@@ -16,6 +16,10 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
+type YoutubeService struct {
+	Repository *youtubeRepository.YoutubeRepository
+}
+
 const (
 	YOUTUBE_AUTH_URI                    = "https://accounts.google.com/o/oauth2/auth"
 	YOUTUBE_TOKEN_URI                   = "https://oauth2.googleapis.com/token"
@@ -24,8 +28,8 @@ const (
 )
 
 // TODO: Add a struct to all these methods like Spotify
-func GetAuthURL() string {
-	config, err := loadFromConfig()
+func (y *YoutubeService) GetAuthURL() string {
+	config, err := y.loadFromConfig()
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
@@ -33,9 +37,9 @@ func GetAuthURL() string {
 	return authURL
 }
 
-func GetPlaylist(playlistId string, token *oauth2.Token) (*youtubeModels.Playlist, error) {
+func (y *YoutubeService) GetPlaylist(playlistId string, token *oauth2.Token) (*youtubeModels.Playlist, error) {
 	var playlist youtubeModels.Playlist
-	config, err := loadFromConfig()
+	config, err := y.loadFromConfig()
 	if err != nil {
 		return nil, fmt.Errorf("error loading config: %v", err)
 	}
@@ -112,9 +116,9 @@ func GetPlaylist(playlistId string, token *oauth2.Token) (*youtubeModels.Playlis
 
 }
 
-func InsertPlaylist(playlistId string, token *oauth2.Token, playlist youtubeModels.Playlist) error {
+func (y *YoutubeService) InsertPlaylist(playlistId string, token *oauth2.Token, playlist youtubeModels.Playlist) error {
 
-	config, err := loadFromConfig()
+	config, err := y.loadFromConfig()
 	if err != nil {
 		return fmt.Errorf("error loading config: %v", err)
 	}
@@ -132,7 +136,7 @@ func InsertPlaylist(playlistId string, token *oauth2.Token, playlist youtubeMode
 		artistName := music.Artists[0].Name
 
 		search := fmt.Sprintf("%s %s", musicName, artistName)
-		videoId, err := findMusic(search, service)
+		videoId, err := y.findMusic(search, service)
 		if err != nil {
 			fmt.Printf("could not found %s from %s\n", musicName, artistName)
 			fmt.Println(err.Error())
@@ -160,7 +164,7 @@ func InsertPlaylist(playlistId string, token *oauth2.Token, playlist youtubeMode
 	return nil
 }
 
-func findMusic(search string, service *youtube.Service) (string, error) {
+func (y *YoutubeService) findMusic(search string, service *youtube.Service) (string, error) {
 	part := []string{"id,snippet"}
 	call := service.Search.List(part).Q(search).MaxResults(1).Type("video")
 	response, err := call.Do()
@@ -170,8 +174,8 @@ func findMusic(search string, service *youtube.Service) (string, error) {
 	return response.Items[0].Id.VideoId, nil
 }
 
-func GetYouTubeCredentials(username string) (*oauth2.Token, error) {
-	credentials, err := youtubeRepository.GetYouTubeCredentials(username)
+func (y *YoutubeService) GetYouTubeCredentials(username string) (*oauth2.Token, error) {
+	credentials, err := y.Repository.GetYouTubeCredentials(username)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving YouTube credentials: %v", err)
 	}
@@ -181,15 +185,15 @@ func GetYouTubeCredentials(username string) (*oauth2.Token, error) {
 	return token, nil
 }
 
-func SaveToken(username string, token *oauth2.Token) error {
-	_, Credentials_err := youtubeRepository.GetYouTubeCredentials(username)
+func (y *YoutubeService) SaveToken(username string, token *oauth2.Token) error {
+	_, Credentials_err := y.Repository.GetYouTubeCredentials(username)
 	if Credentials_err == nil {
-		err := youtubeRepository.UpdateYouTubeCredentials(username, token.AccessToken)
+		err := y.Repository.UpdateYouTubeCredentials(username, token.AccessToken)
 		if err != nil {
 			return fmt.Errorf("error updating YouTube credentials: %v", err)
 		}
 	} else {
-		err := youtubeRepository.InsertYouTubeCredentials(
+		err := y.Repository.InsertYouTubeCredentials(
 			username,
 			token.AccessToken,
 		)
@@ -200,8 +204,8 @@ func SaveToken(username string, token *oauth2.Token) error {
 	return nil
 }
 
-func GetWebTokenFromCode(code string) (*oauth2.Token, error) {
-	config, err := loadFromConfig()
+func (y *YoutubeService) GetWebTokenFromCode(code string) (*oauth2.Token, error) {
+	config, err := y.loadFromConfig()
 	if err != nil {
 		return nil, fmt.Errorf("error loading config: %v", err)
 	}
@@ -213,7 +217,7 @@ func GetWebTokenFromCode(code string) (*oauth2.Token, error) {
 	return token, nil
 }
 
-func loadFromConfig() (*oauth2.Config, error) {
+func (y *YoutubeService) loadFromConfig() (*oauth2.Config, error) {
 	protocol := configs.Cfg.FrontConfig.Protocol
 	host := configs.Cfg.FrontConfig.Host
 	config := &oauth2.Config{
