@@ -13,7 +13,6 @@ const (
 	UPDATE_QUERY_YOUTUBECREDENTIALS = `UPDATE youtube SET access_token = $2 WHERE account_username = $1`
 )
 
-// TODO: Add a struct to all these methods like Spotify
 func (y *YoutubeRepository) InsertYouTubeCredentials(
 	Username string,
 	AccessToken string,

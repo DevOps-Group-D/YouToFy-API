@@ -27,7 +27,6 @@ const (
 	YOUTUBE_REDIRECT_URI                = "%s://%s"
 )
 
-// TODO: Add a struct to all these methods like Spotify
 func (y *YoutubeService) GetAuthURL() string {
 	config, err := y.loadFromConfig()
 	if err != nil {
