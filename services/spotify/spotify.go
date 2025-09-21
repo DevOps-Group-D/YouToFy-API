@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/DevOps-Group-D/YouToFy-API/configs"
+	"github.com/DevOps-Group-D/YouToFy-API/models"
 	spotifyModels "github.com/DevOps-Group-D/YouToFy-API/models/spotify"
 	spotifyRepository "github.com/DevOps-Group-D/YouToFy-API/repositories/spotify"
 	"github.com/DevOps-Group-D/YouToFy-API/utils"
@@ -93,7 +94,7 @@ func (s *SpotifyService) GetAccessToken(username string, code string) (*spotifyM
 	return &accessTokenRes, nil
 }
 
-func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*spotifyModels.Playlist, error) {
+func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*models.Playlist, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(GET_PLAYLISTS_URL, playlistId), nil)
 	if err != nil {
 		return nil, err
@@ -115,7 +116,7 @@ func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*sp
 		return nil, fmt.Errorf("Error making get spotify playlist request: %s", errorBody)
 	}
 
-	var playlist spotifyModels.Playlist
+	var playlist models.Playlist
 
 	err = json.NewDecoder(res.Body).Decode(&playlist)
 	if err != nil {
@@ -125,7 +126,7 @@ func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*sp
 	return &playlist, nil
 }
 
-func (s *SpotifyService) InsertPlaylist(playlistId string, username string, accessToken string, playlist *spotifyModels.Playlist) error {
+func (s *SpotifyService) InsertPlaylist(playlistId string, accessToken string, playlist *models.Playlist) error {
 	insertPlaylistRequest := spotifyModels.InsertPlaylistRequest{Position: 0}
 
 	for _, item := range playlist.Items {
@@ -133,9 +134,9 @@ func (s *SpotifyService) InsertPlaylist(playlistId string, username string, acce
 		musicName := music.Name
 		artistName := music.Artists[0].Name
 
-		musicFound, err := findMusic(musicName, artistName)
+		musicFound, err := findMusic(musicName, artistName, accessToken)
 		if err != nil {
-			fmt.Printf("Could not found %s from %s\n", musicName, artistName)
+			fmt.Printf("Could not found %s from %s, Error: %s\n", musicName, artistName, err)
 			continue
 		}
 		musicFoundUri := musicFound.URI
@@ -155,30 +156,50 @@ func (s *SpotifyService) InsertPlaylist(playlistId string, username string, acce
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	req.Header.Set("Content-Type", "application/json")
 
+	res, err := utils.Client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("spotify API returned status %d", res.StatusCode)
+	}
+
 	return nil
 }
 
-func findMusic(name string, artist string) (*spotifyModels.Track, error) {
+func findMusic(name string, artist string, accessToken string) (*spotifyModels.FoundItem, error) {
 	queryParams := url.Values{}
 	queryParams.Set("q", fmt.Sprintf("%s %s", name, artist))
+	queryParams.Set("limit", "1")
 	queryParams.Set("type", "track")
 
 	req, err := http.NewRequest(http.MethodGet, SEARCH_MUSIC_URL+"?"+queryParams.Encode(), nil)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
 	res, err := utils.Client.Do(req)
 	if err != nil {
-		return nil, nil
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("spotify API returned status %d", res.StatusCode)
 	}
 
-	var tracks *spotifyModels.Tracks
+	var foundMusics *spotifyModels.FoundMusics
 
-	err = json.NewDecoder(res.Body).Decode(&tracks)
+	err = json.NewDecoder(res.Body).Decode(&foundMusics)
 	if err != nil {
 		return nil, err
 	}
 
-	return &tracks.Items[0], nil
+	if foundMusics == nil || len(foundMusics.Tracks.Items) == 0 {
+		return nil, fmt.Errorf("no tracks found for '%s' by '%s'", name, artist)
+	}
+
+	return &foundMusics.Tracks.Items[0], nil
 }

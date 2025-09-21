@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	spotifyModels "github.com/DevOps-Group-D/YouToFy-API/models/spotify"
+	"github.com/DevOps-Group-D/YouToFy-API/models"
 	"github.com/DevOps-Group-D/YouToFy-API/services/authentication"
 )
 
@@ -49,6 +49,7 @@ func (p spotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errMsg := "Error getting playlist"
 		http.Error(w, errMsg, http.StatusInternalServerError)
+		errMsg += fmt.Sprintf(": %s", err.Error())
 		fmt.Println(errMsg)
 		return
 	}
@@ -57,6 +58,7 @@ func (p spotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errMsg := "Error marshalling playlist"
 		http.Error(w, errMsg, http.StatusInternalServerError)
+		errMsg += fmt.Sprintf(": %s", err.Error())
 		fmt.Println(errMsg)
 		return
 	}
@@ -67,7 +69,7 @@ func (p spotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p spotifyProvider) InsertPlaylist(w http.ResponseWriter, r *http.Request) {
-	var playlist *spotifyModels.Playlist
+	var playlist *models.Playlist
 
 	err := json.NewDecoder(r.Body).Decode(&playlist)
 	if err != nil {
@@ -110,7 +112,7 @@ func (p spotifyProvider) InsertPlaylist(w http.ResponseWriter, r *http.Request) 
 	}
 	playlistId := urlParts[2]
 
-	err = p.Service.InsertPlaylist(playlistId, username.Value, accessToken.Value, playlist)
+	err = p.Service.InsertPlaylist(playlistId, accessToken.Value, playlist)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error inserting musics into playlist: %s", err)
 		http.Error(w, errMsg, http.StatusInternalServerError)

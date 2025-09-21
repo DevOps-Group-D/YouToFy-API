@@ -1,4 +1,4 @@
-package spotify
+package models
 
 import "time"
 
@@ -37,8 +37,4 @@ type Image struct {
 	Height int    `json:"height"`
 	URL    string `json:"url"`
 	Width  int    `json:"width"`
-}
-
-type Tracks struct {
-	Items []Track `json:"items"`
 }
