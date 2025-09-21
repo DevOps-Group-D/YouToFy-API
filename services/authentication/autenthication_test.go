@@ -44,32 +44,17 @@ func teardownTest() {
 func TestAuthorize(t *testing.T) {
 	setupTest()
 	defer teardownTest()
-
-	tests := []struct {
-		name     string
-		username string
-		cookies  []*http.Cookie
-		expected bool
-	}{
-		{
-			name:     "Valid authorization",
-			username: "testuser",
-			cookies:  []*http.Cookie{{Name: "X-CSRF-Token", Value: "validtoken"}},
-			expected: true,
-		},
-		{
-			name:     "Invalid authorization",
-			username: "invaliduser",
-			cookies:  []*http.Cookie{{Name: "X-CSRF-Token", Value: "invalidtoken"}},
-			expected: false,
-		},
+	result := Authorize("testuser", []*http.Cookie{{Name: "X-CSRF-Token", Value: "validtoken"}})
+	if result != true {
+		t.Errorf("Authorize() = %v, expected true", result)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := Authorize(tt.username, tt.cookies)
-			if result != tt.expected {
-				t.Errorf("Authorize() = %v, expected %v", result, tt.expected)
-			}
-		})
+}
+
+func TestAuthorizeInvalid(t *testing.T) {
+	setupTest()
+	defer teardownTest()
+	result := Authorize("invaliduser", []*http.Cookie{{Name: "X-CSRF-Token", Value: "invalidtoken"}})
+	if result != false {
+		t.Errorf("Authorize() = %v, expected false", result)
 	}
 }
