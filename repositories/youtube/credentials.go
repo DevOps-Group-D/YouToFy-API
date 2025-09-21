@@ -2,7 +2,7 @@ package youtube
 
 import (
 	"github.com/DevOps-Group-D/YouToFy-API/database"
-	"github.com/DevOps-Group-D/YouToFy-API/models"
+	"github.com/DevOps-Group-D/YouToFy-API/models/authentication"
 )
 
 const (
@@ -34,7 +34,7 @@ func InsertYouTubeCredentials(
 	return nil
 }
 
-func GetYouTubeCredentials(username string) (*models.YouTubeCredentials, error) {
+func GetYouTubeCredentials(username string) (*authentication.Youtube, error) {
 	conn, err := database.Connect()
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func GetYouTubeCredentials(username string) (*models.YouTubeCredentials, error) 
 		return nil, row.Err()
 	}
 
-	youTubeCredentials := &models.YouTubeCredentials{}
+	youTubeCredentials := &authentication.Youtube{}
 	err = row.Scan(&youTubeCredentials.AccountUsername, &youTubeCredentials.AccessToken)
 	if err != nil {
 		return nil, err
