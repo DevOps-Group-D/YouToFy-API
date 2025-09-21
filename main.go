@@ -23,7 +23,7 @@ func main() {
 		log.Fatalf("Usage: %s <provider> <port>(optional)", os.Args[0])
 	}
 	provider := os.Args[1]
-	port := "0"
+	port := ""
 	if len(os.Args) > 2 {
 		port = os.Args[2]
 	}
@@ -36,7 +36,7 @@ func main() {
 
 	// Initializing configs
 	cfg := configs.LoadConfig(utils.GetProvider(provider))
-	if port != "0" {
+	if port != "" {
 		cfg.GetProvider().Port = port
 	}
 
