@@ -1,6 +1,9 @@
 run:
-# 	docker compose up --build
+	go run .
 
 args?=./...
 test:
-# 	go test $(args)
+	go test $(args)
+
+build:
+	go build -o youtofy-youtube .
