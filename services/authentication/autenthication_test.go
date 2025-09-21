@@ -6,10 +6,13 @@ import (
 	"testing"
 
 	"github.com/DevOps-Group-D/YouToFy-API/configs"
+	"github.com/DevOps-Group-D/YouToFy-API/utils"
 )
 
-func TestAuthorize(t *testing.T) {
-	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+var mockServer *httptest.Server
+
+func setupTest() {
+	mockServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost && r.URL.Path == "/authorize" {
 			if r.Header.Get("X-CSRF-Token") == "validtoken" {
 				w.WriteHeader(http.StatusOK)
@@ -21,7 +24,7 @@ func TestAuthorize(t *testing.T) {
 		w.WriteHeader(http.StatusUnauthorized)
 	}))
 
-	configs.LoadConfig()
+	configs.LoadConfig(utils.GetProvider("youtube"))
 
 	// Initialize configs.Cfg and AuthenticationConfig to avoid nil pointer dereference
 	if configs.Cfg.AuthenticationConfig == nil {
@@ -30,6 +33,17 @@ func TestAuthorize(t *testing.T) {
 	configs.Cfg.AuthenticationConfig.Protocol = "http"
 	configs.Cfg.AuthenticationConfig.Host = mockServer.Listener.Addr().String()
 	configs.Cfg.AuthenticationConfig.Port = ""
+}
+
+func teardownTest() {
+	if mockServer != nil {
+		mockServer.Close()
+	}
+}
+
+func TestAuthorize(t *testing.T) {
+	setupTest()
+	defer teardownTest()
 
 	tests := []struct {
 		name     string
@@ -58,5 +72,4 @@ func TestAuthorize(t *testing.T) {
 			}
 		})
 	}
-	defer mockServer.Close()
 }
