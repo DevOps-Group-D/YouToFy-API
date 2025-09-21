@@ -33,18 +33,18 @@ func GetAuthURL() string {
 	return authURL
 }
 
-func GetPlaylist(playlistId string, token *oauth2.Token) (youtubeModels.Playlist, error) {
+func GetPlaylist(playlistId string, token *oauth2.Token) (*youtubeModels.Playlist, error) {
 	var playlist youtubeModels.Playlist
 	config, err := loadFromConfig()
 	if err != nil {
-		return playlist, fmt.Errorf("error loading config: %v", err)
+		return nil, fmt.Errorf("error loading config: %v", err)
 	}
 	ctx := context.Background()
 	client := config.Client(ctx, token)
 	opts := option.WithHTTPClient(client)
 	service, err := youtube.NewService(ctx, opts)
 	if err != nil {
-		return playlist, fmt.Errorf("error creating YouTube service: %v", err)
+		return nil, fmt.Errorf("error creating YouTube service: %v", err)
 	}
 	part := []string{"snippet,contentDetails"}
 	call := service.PlaylistItems.List(part).PlaylistId(playlistId)
@@ -106,9 +106,9 @@ func GetPlaylist(playlistId string, token *oauth2.Token) (youtubeModels.Playlist
 		return nil
 	})
 	if err != nil {
-		return playlist, fmt.Errorf("error retrieving playlist items: %v", err)
+		return nil, fmt.Errorf("error retrieving playlist items: %v", err)
 	}
-	return playlist, nil
+	return &playlist, nil
 
 }
 
