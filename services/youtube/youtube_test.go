@@ -6,9 +6,12 @@ import (
 	"testing"
 
 	"github.com/DevOps-Group-D/YouToFy-API/configs"
+	"github.com/DevOps-Group-D/YouToFy-API/repositories/youtube"
+	"github.com/DevOps-Group-D/YouToFy-API/utils"
 )
 
 var mockServer *httptest.Server
+var youtubeService *YoutubeService
 
 func setupTest() {
 	mockServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +22,8 @@ func setupTest() {
 		}
 		w.WriteHeader(http.StatusNotFound)
 	}))
-	configs.LoadConfig()
+	youtubeService = &YoutubeService{&youtube.YoutubeRepository{}}
+	configs.LoadConfig(utils.GetProvider("youtube"))
 	configs.Cfg.YoutubeConfig.ClientId = "mock-client-id"
 	configs.Cfg.YoutubeConfig.ClientSecret = "mock-client-secret"
 	configs.Cfg.YoutubeConfig.RedirectUri = "http://localhost:8080/oauth2callback"
@@ -37,7 +41,7 @@ func teardownTest() {
 func TestGetAuthURL(t *testing.T) {
 	setupTest()
 	defer teardownTest()
-	url := GetAuthURL()
+	url := youtubeService.GetAuthURL()
 	if url == "" {
 		t.Errorf("GetAuthURL() returned empty URL")
 	}
