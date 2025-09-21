@@ -47,16 +47,18 @@ func (p spotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 
 	playlist, err := p.Service.GetPlaylist(playlistId, accessToken.Value)
 	if err != nil {
-		errMsg := "Error getting playlist: " + err.Error()
+		errMsg := "Error getting playlist"
 		http.Error(w, errMsg, http.StatusInternalServerError)
+		errMsg += fmt.Sprintf(": %s", err.Error())
 		fmt.Println(errMsg)
 		return
 	}
 
 	playlistJson, err := json.Marshal(playlist)
 	if err != nil {
-		errMsg := "Error marshalling playlist: " + err.Error()
+		errMsg := "Error marshalling playlist"
 		http.Error(w, errMsg, http.StatusInternalServerError)
+		errMsg += fmt.Sprintf(": %s", err.Error())
 		fmt.Println(errMsg)
 		return
 	}
