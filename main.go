@@ -64,9 +64,6 @@ func main() {
 	// Registering patch routes
 	router.Patch("/playlist/{playlistId}", providerImpl.InsertPlaylist)
 
-	// Registering patch routes
-	router.Patch("/playlist/{playlistId}", providerImpl.InsertPlaylist)
-
 	fmt.Println("Listening and serving on port", cfg.GetProvider().Port)
 	http.ListenAndServe(fmt.Sprintf(":%s", cfg.GetProvider().Port), router)
 }
