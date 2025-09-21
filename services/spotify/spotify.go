@@ -134,7 +134,7 @@ func (s *SpotifyService) InsertPlaylist(playlistId string, accessToken string, p
 		musicName := music.Name
 		artistName := music.Artists[0].Name
 
-		musicFound, err := findMusic(musicName, artistName, accessToken)
+		musicFound, err := findMusic(musicName, accessToken)
 		if err != nil {
 			fmt.Printf("Could not found %s from %s, Error: %s\n", musicName, artistName, err)
 			continue
@@ -168,9 +168,9 @@ func (s *SpotifyService) InsertPlaylist(playlistId string, accessToken string, p
 	return nil
 }
 
-func findMusic(name string, artist string, accessToken string) (*spotifyModels.FoundItem, error) {
+func findMusic(name string, accessToken string) (*spotifyModels.FoundItem, error) {
 	queryParams := url.Values{}
-	queryParams.Set("q", fmt.Sprintf("%s %s", name, artist))
+	queryParams.Set("q", name)
 	queryParams.Set("limit", "1")
 	queryParams.Set("type", "track")
 
@@ -198,7 +198,7 @@ func findMusic(name string, artist string, accessToken string) (*spotifyModels.F
 	}
 
 	if foundMusics == nil || len(foundMusics.Tracks.Items) == 0 {
-		return nil, fmt.Errorf("no tracks found for '%s' by '%s'", name, artist)
+		return nil, fmt.Errorf("no tracks found for '%s'", name)
 	}
 
 	return &foundMusics.Tracks.Items[0], nil
