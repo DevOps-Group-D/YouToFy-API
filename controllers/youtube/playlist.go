@@ -45,7 +45,7 @@ func (p youtubeProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(errMsg)
 		return
 	}
-	var playlist youtubeModels.Playlist
+	var playlist *youtubeModels.Playlist
 	playlist, err = youtubeService.GetPlaylist(playlistId, authCode)
 	if err != nil {
 		http.Error(w, "error retrieving playlist: "+err.Error(), http.StatusInternalServerError)
