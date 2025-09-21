@@ -63,17 +63,21 @@ func (y *YoutubeRepository) UpdateYouTubeCredentials(
 	Username string,
 	AccessToken string,
 ) error {
-	conn, err := database.Connect()
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
+	_, Credentials_err := y.GetYouTubeCredentials(Username)
+	if Credentials_err != nil {
+		return y.InsertYouTubeCredentials(Username, AccessToken)
+	} else {
+		conn, err := database.Connect()
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
 
-	row := conn.QueryRow(UPDATE_QUERY_YOUTUBECREDENTIALS,
-		Username, AccessToken)
-	if row.Err() != nil {
-		return row.Err()
+		row := conn.QueryRow(UPDATE_QUERY_YOUTUBECREDENTIALS,
+			Username, AccessToken)
+		if row.Err() != nil {
+			return row.Err()
+		}
 	}
-
 	return nil
 }

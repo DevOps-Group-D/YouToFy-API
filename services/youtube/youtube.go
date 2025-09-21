@@ -186,20 +186,9 @@ func (y *YoutubeService) GetYouTubeCredentials(username string) (*oauth2.Token, 
 }
 
 func (y *YoutubeService) SaveToken(username string, token *oauth2.Token) error {
-	_, Credentials_err := y.Repository.GetYouTubeCredentials(username)
-	if Credentials_err == nil {
-		err := y.Repository.UpdateYouTubeCredentials(username, token.AccessToken)
-		if err != nil {
-			return fmt.Errorf("error updating YouTube credentials: %v", err)
-		}
-	} else {
-		err := y.Repository.InsertYouTubeCredentials(
-			username,
-			token.AccessToken,
-		)
-		if err != nil {
-			return fmt.Errorf("error saving YouTube credentials: %v", err)
-		}
+	err := y.Repository.UpdateYouTubeCredentials(username, token.AccessToken)
+	if err != nil {
+		return fmt.Errorf("error updating YouTube credentials: %v", err)
 	}
 	return nil
 }
