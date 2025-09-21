@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/DevOps-Group-D/YouToFy-API/configs"
+	"github.com/DevOps-Group-D/YouToFy-API/models"
 	spotifyModels "github.com/DevOps-Group-D/YouToFy-API/models/spotify"
 	spotifyRepository "github.com/DevOps-Group-D/YouToFy-API/repositories/spotify"
 	"github.com/DevOps-Group-D/YouToFy-API/utils"
@@ -93,7 +94,7 @@ func (s *SpotifyService) GetAccessToken(username string, code string) (*spotifyM
 	return &accessTokenRes, nil
 }
 
-func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*spotifyModels.Playlist, error) {
+func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*models.Playlist, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(GET_PLAYLISTS_URL, playlistId), nil)
 	if err != nil {
 		return nil, err
@@ -115,7 +116,7 @@ func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*sp
 		return nil, fmt.Errorf("Error making get spotify playlist request: %s", errorBody)
 	}
 
-	var playlist spotifyModels.Playlist
+	var playlist models.Playlist
 
 	err = json.NewDecoder(res.Body).Decode(&playlist)
 	if err != nil {
@@ -125,7 +126,7 @@ func (s *SpotifyService) GetPlaylist(playlistId string, accessToken string) (*sp
 	return &playlist, nil
 }
 
-func (s *SpotifyService) InsertPlaylist(playlistId string, accessToken string, playlist *spotifyModels.Playlist) error {
+func (s *SpotifyService) InsertPlaylist(playlistId string, accessToken string, playlist *models.Playlist) error {
 	insertPlaylistRequest := spotifyModels.InsertPlaylistRequest{Position: 0}
 
 	for _, item := range playlist.Items {

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	spotifyModels "github.com/DevOps-Group-D/YouToFy-API/models/spotify"
+	"github.com/DevOps-Group-D/YouToFy-API/models"
 	"github.com/DevOps-Group-D/YouToFy-API/services/authentication"
 )
 
@@ -67,7 +67,7 @@ func (p spotifyProvider) GetPlaylist(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p spotifyProvider) InsertPlaylist(w http.ResponseWriter, r *http.Request) {
-	var playlist *spotifyModels.Playlist
+	var playlist *models.Playlist
 
 	err := json.NewDecoder(r.Body).Decode(&playlist)
 	if err != nil {
